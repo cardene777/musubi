@@ -108,3 +108,12 @@ test("spec-shows-the-run-line-for-a-script", () => {
     assert.ok(readFileSync(path, "utf8").includes(line), `${path} does not show the run line`);
   }
 });
+
+test("readme-shows-the-npm-install", () => {
+  for (const readme of ["README.md", "README.ja.md"]) {
+    const text = readFileSync(join(root, readme), "utf8");
+    for (const command of ["npm install -g musubi-cli", "npx musubi-cli check"]) {
+      assert.ok(text.includes(command), `${readme} does not show ${command}`);
+    }
+  }
+});
