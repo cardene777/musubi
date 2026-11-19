@@ -20,9 +20,9 @@
 
 ## 拠り所
 
-- Claude Codeは`.claude/skills`、Codexは`.agents/skills`、Copilot CLIとGemini CLIはそれぞれのフォルダと`.agents/skills`を読み、どれも入っているスキルを名前で並べる (cardene777/musubi#3で調べた)。
+- Claude Codeは`.claude/skills`、Codexは`.agents/skills`、Copilot CLIとGemini CLIはそれぞれのフォルダと`.agents/skills`を読み、どれも入っているスキルを名前で並べる (課題#3で調べた)。
 - 定義はClaude Code以外のエージェントでも従える形に書く (`.ikkan/premises/tech.md`の8行目)。
-- cardene777/musubi#3の決めたことの表の3回目。
+- 課題#3の決めたことの表の3回目。
 
 ## 決めた日
 

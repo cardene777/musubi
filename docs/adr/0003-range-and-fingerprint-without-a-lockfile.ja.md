@@ -23,8 +23,8 @@
 
 ## 拠り所
 
-- npmの`integrity`の欄と、Agent Skillsのlockfileの提案#210は、`sha256`の値を同じsubresource integrityの形で書く (cardene777/musubi#3で調べた)。
-- cardene777/musubi#3の決めたことの表の2回目と4回目。
+- npmの`integrity`の欄と、Agent Skillsのlockfileの提案#210は、`sha256`の値を同じsubresource integrityの形で書く (課題#3で調べた)。
+- 課題#3の決めたことの表の2回目と4回目。
 
 ## 決めた日
 

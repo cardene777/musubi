@@ -19,9 +19,9 @@ A separate `musubi.json` next to `SKILL.md` holds `provides` and `follows` as st
 
 ## Grounds
 
-- The Agent Skills specification defines `metadata` as a map from strings to strings, and its reference validator rejects unknown top-level fields (researched in cardene777/musubi#3).
+- The Agent Skills specification defines `metadata` as a map from strings to strings, and its reference validator rejects unknown top-level fields (researched in issue #3).
 - The definition must work for agents other than Claude Code (`.ikkan/premises/tech.md`, line 8).
-- cardene777/musubi#3, decision table, round 1.
+- Issue #3, decision table, round 1.
 
 ## Date
 

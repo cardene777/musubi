@@ -20,9 +20,9 @@ Agents do not read `musubi.json` at that time, so an agent without the musubi co
 
 ## Grounds
 
-- Claude Code reads `.claude/skills`, Codex reads `.agents/skills`, and Copilot CLI and Gemini CLI read their own folders and `.agents/skills`, and each of them lists installed skills by name (researched in cardene777/musubi#3).
+- Claude Code reads `.claude/skills`, Codex reads `.agents/skills`, and Copilot CLI and Gemini CLI read their own folders and `.agents/skills`, and each of them lists installed skills by name (researched in issue #3).
 - The definition must work for agents other than Claude Code (`.ikkan/premises/tech.md`, line 8).
-- cardene777/musubi#3, decision table, round 3.
+- Issue #3, decision table, round 3.
 
 ## Date
 

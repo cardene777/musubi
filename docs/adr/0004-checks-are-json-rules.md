@@ -22,7 +22,7 @@ The definition fixes the kinds of rules a check may use, and new kinds are added
 ## Grounds
 
 - Fingerprints (ADR 0003) detect rewritten content but do not make running provider code safe.
-- cardene777/musubi#3, decision table, rounds 3 and 5.
+- Issue #3, decision table, rounds 3 and 5.
 
 ## Date
 

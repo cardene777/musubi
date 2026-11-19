@@ -6,7 +6,18 @@ Claude Code reads it through `CLAUDE.md`; Codex and other agents read it directl
 ## What this repository is
 
 musubi is a proposal for binding the content one agent skill provides (a document format, writing rules, a check) to the skills that follow it, with names, versions, and checks that work in every agent that reads `SKILL.md`.
-The definition is decided first, in this repository's issues, before any tool is built.
+The definition is decided in this repository's issues, and the `musubi` command checks skills against it.
+
+```
+spec/                 The definition, English (normative) and Japanese
+schema/<date>/        JSON Schemas of musubi.json and check files, one folder per definition version
+src/                  The musubi command: check, add, graph
+tests/                Tests run with node --test
+examples/skills/      One provider skill and one consumer skill
+GLOSSARY.md           Terms the definition uses
+docs/adr/             Decisions that are costly to reverse
+.ikkan/               Records kept by the ikkan workflow, not shipped
+```
 
 ## Rules
 
@@ -14,8 +25,17 @@ The definition is decided first, in this repository's issues, before any tool is
 - Write the definition so that an agent other than Claude Code can follow it. Say "shell command" instead of naming one agent's tool.
 - Every README and doc page has a Japanese counterpart named `<name>.ja.md` with the same headings, tables, and code blocks. Update both in the same pull request.
 - The records under `.ikkan/` are written by the ikkan workflow in Japanese.
+- The definition dates live only in the folder names under `schema/`. Do not write them in `src/`.
+- The command has no runtime dependencies. Development dependencies are installed with pnpm.
 - Do not include personal data in files, commits, or pull requests: local paths such as `/Users/<name>`, email addresses, or account names.
 - Do not add CI workflows.
+
+## Verifying a change
+
+```bash
+pnpm install
+pnpm test
+```
 
 ## Commits and pull requests
 

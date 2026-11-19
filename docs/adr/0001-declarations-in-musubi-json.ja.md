@@ -19,9 +19,9 @@
 
 ## 拠り所
 
-- Agent Skillsの仕様は`metadata`を文字から文字への対応と決めており、検査の見本は知らない頭の欄を断る (cardene777/musubi#3で調べた)。
+- Agent Skillsの仕様は`metadata`を文字から文字への対応と決めており、検査の見本は知らない頭の欄を断る (課題#3で調べた)。
 - 定義はClaude Code以外のエージェントでも従える形に書く (`.ikkan/premises/tech.md`の8行目)。
-- cardene777/musubi#3の決めたことの表の1回目。
+- 課題#3の決めたことの表の1回目。
 
 ## 決めた日
 

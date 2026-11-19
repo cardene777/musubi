@@ -23,8 +23,8 @@ The consumer's body also tells the agent to compare fingerprints before reading 
 
 ## Grounds
 
-- npm's `integrity` field and the Agent Skills lockfile proposal #210 record `sha256` digests in the same subresource integrity format (researched in cardene777/musubi#3).
-- cardene777/musubi#3, decision table, rounds 2 and 4.
+- npm's `integrity` field and the Agent Skills lockfile proposal #210 record `sha256` digests in the same subresource integrity format (researched in issue #3).
+- Issue #3, decision table, rounds 2 and 4.
 
 ## Date
 
