@@ -109,6 +109,15 @@ test("spec-shows-the-run-line-for-a-script", () => {
   }
 });
 
+test("readme-shows-how-to-register", () => {
+  for (const readme of ["README.md", "README.ja.md"]) {
+    const text = readFileSync(join(root, readme), "utf8");
+    for (const part of ["registry/<owner>/<repo>.json", "node site/build.ts"]) {
+      assert.ok(text.includes(part), `${readme} does not show ${part}`);
+    }
+  }
+});
+
 test("readme-shows-the-npm-install", () => {
   for (const readme of ["README.md", "README.ja.md"]) {
     const text = readFileSync(join(root, readme), "utf8");

@@ -1,0 +1,10 @@
+{
+  "skills": [
+    "plugins/doc-formats/skills/design-doc",
+    "plugins/evm-dev/skills/contract-design",
+    "plugins/evm-dev/skills/dapp-architecture",
+    "plugins/evm-dev/skills/financial-standards",
+    "plugins/evm-dev/skills/multichain-design",
+    "plugins/evm-dev/skills/wallet-design"
+  ]
+}

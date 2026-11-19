@@ -68,6 +68,24 @@ node src/cli.ts check examples/skills
 node src/cli.ts graph examples/skills --out graph.html
 ```
 
+## サイトにスキルを載せる
+
+musubiのサイトは、定義と、`registry/`に名前のあるスキルを見せます。スキルごとに、出す中身と従う中身と、そのスキルに従っているスキルが載ります。
+repoごとに1つの`registry/<owner>/<repo>.json`を置き、見せるスキルのフォルダをrepoの根からの相対のpathで並べます。
+
+```json
+{
+  "skills": ["plugins/doc-formats/skills/design-doc", "plugins/evm-dev/skills/contract-design"]
+}
+```
+
+スキルを載せる時は、そのfileを足すか変えるPRを送ります。
+サイトは各フォルダの`musubi.json`と`SKILL.md`を、GitHubにあるrepoの既定のbranchから読むので、repoは公開している必要があります。
+`musubi.json`を読めないフォルダは、サイトを組み立てる時に名指して知らせ、一覧から外します。
+
+サイトを組み立てて手元の<http://localhost:3810/>で開く時は、`pnpm site`を打ちます。
+この命令は`node site/build.ts`で頁を`site/dist/`へ書き出してから、そのフォルダを配ります。
+
 ## 文書
 
 | 文書 | 持つ物 |
