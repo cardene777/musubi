@@ -1,0 +1,28 @@
+# 0001. 宣言はmusubi.jsonに書く
+
+## 決めたこと
+
+出す側と使う側のスキルが、musubiの宣言をどこに書くか。
+
+## 選んだ案
+
+`SKILL.md`の横に別の`musubi.json`を置き、`provides`と`follows`を構造のままJSONで書き、JSON Schemaで確かめる。
+`SKILL.md`はAgent Skillsの仕様が決める形のままにする。
+
+## 却下した案
+
+| 案 | 採らなかった理由 |
+|---|---|
+| `SKILL.md`の頭の`metadata`に書く | 値が文字だけなので、従う中身の一覧を1つの文字に詰めることになる |
+| `requires`のような新しい欄を頭に足す | Agent Skillsの検査の見本は知っている6つの欄の外を断るので、仕様が変わるまでスキルが検査に落ちる |
+| `SKILL.md`の本文の節に書く | 機械で読むには、本文の書き方の決まりが要る |
+
+## 拠り所
+
+- Agent Skillsの仕様は`metadata`を文字から文字への対応と決めており、検査の見本は知らない頭の欄を断る (cardene777/musubi#3で調べた)。
+- 定義はClaude Code以外のエージェントでも従える形に書く (`.ikkan/premises/tech.md`の8行目)。
+- cardene777/musubi#3の決めたことの表の1回目。
+
+## 決めた日
+
+2026-11-19
