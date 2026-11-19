@@ -49,6 +49,18 @@ musubiでは、スキルが出す中身を名前と版で宣言し、別のス�
 
 `musubi`の命令は宣言を確かめ、出す側の検査を使う側の例に回します。
 Node.js 22.18以降で動き、実行時の依存を持ちません。
+npmには`musubi-cli`の名前で出ており、入れた後はプロジェクトのフォルダで回します。
+
+```bash
+npm install -g musubi-cli
+musubi check
+musubi graph --out graph.html
+```
+
+フォルダを渡さない時、`musubi check`は今のフォルダとホームのフォルダの`.claude/skills`、`.agents/skills`、`.github/skills`、`.gemini/skills`を読みます。
+入れずに1回だけ回す時は、`npx musubi-cli check <スキルのフォルダ>`を使います。
+
+このrepoを手元に写して回す時は、先に開発の依存を入れます。
 
 ```bash
 pnpm install

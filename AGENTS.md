@@ -27,7 +27,7 @@ docs/adr/             Decisions that are costly to reverse
 - The records under `.ikkan/` are written by the ikkan workflow in Japanese.
 - The definition dates live only in the folder names under `schema/`. Do not write them in `src/`.
 - The command has no runtime dependencies. Development dependencies are installed with pnpm.
-- Do not include personal data in files, commits, or pull requests: local paths such as `/Users/<name>`, email addresses, or account names.
+- Do not include personal data in files, commits, or pull requests: local paths such as `/Users/<name>`, email addresses, or account names. The account name appears only in `LICENSE` and in the repository URL in `package.json`, and the test `account-name-only-in-license-and-package` checks this.
 - Do not add CI workflows.
 
 ## Verifying a change

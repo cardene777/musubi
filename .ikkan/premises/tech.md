@@ -2,6 +2,7 @@
 
 命令はTypeScriptで書き、Node.js 22.18以降が型を外して`src/`を直に回す (`package.json`)。
 配る時は`tsc -p tsconfig.build.json`が`dist/`へ組み立て、実行時の依存を持たない (`package.json`)。
+npmへは`musubi-cli`の名前で出し、`npm pack`と`npm publish`の前に`prepack`が`dist/`をビルドし直す (`package.json`)。
 
 決まっている制約は次のとおり (`AGENTS.md`)。
 
