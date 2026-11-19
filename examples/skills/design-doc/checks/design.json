@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../../schema/2026-11-19/check.schema.json",
+  "musubi": "2026-11-19",
+  "rules": [
+    {
+      "kind": "headings",
+      "headings": ["## Purpose and scope", "## Decisions", "## Open decisions"]
+    },
+    {
+      "kind": "forbid",
+      "text": ["Fill in:"]
+    },
+    {
+      "kind": "table-columns",
+      "heading": "## Decisions",
+      "columns": ["Option", "Chosen", "Why"]
+    }
+  ]
+}

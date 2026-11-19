@@ -1,0 +1,11 @@
+{
+  "$schema": "../../../schema/2026-11-19/musubi.schema.json",
+  "musubi": "2026-11-19",
+  "provides": {
+    "design": {
+      "version": "1.0.0",
+      "file": "formats/design.md",
+      "check": "checks/design.json"
+    }
+  }
+}

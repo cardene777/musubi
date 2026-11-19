@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schema/2026-11-19/musubi.schema.json",
+  "musubi": "2026-11-19",
+  "follows": {
+    "design-doc/design": {
+      "version": "^1.0.0",
+      "integrity": "sha256-yNSwpBT+xXEV5bGBqedpHmjWIHVi+JaAnRATAJ0s7wM=",
+      "examples": [
+        "examples/orders-api.md"
+      ]
+    }
+  }
+}
