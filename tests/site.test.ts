@@ -228,6 +228,98 @@ test("site-writes-the-search-files", () => {
   assert.ok(llms.includes(`${BASE}/skills/alice/skills-a/design-doc/`), "llms.txt does not link the skill pages");
 });
 
+// The tag of each <link> or <meta> whose attribute matches, so a test can read its other attributes.
+const tags = (html: string, kind: "link" | "meta", match: RegExp) =>
+  [...html.matchAll(new RegExp(`<${kind}\\b[^>]*>`, "g"))].map((m) => m[0]).filter((tag) => match.test(tag));
+const href = (tag: string, name: string) => new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1] ?? "";
+
+// The width and height a PNG file records in its IHDR chunk.
+function pngSize(path: string): { width: number; height: number } {
+  const bytes = readFileSync(path);
+  assert.equal(bytes.subarray(1, 4).toString("latin1"), "PNG", `${path} is not a PNG`);
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+}
+
+test("site-pages-name-the-icons", () => {
+  const { out } = built();
+  for (const file of htmlFiles(out)) {
+    const html = readFileSync(file, "utf8");
+    const name = relative(out, file);
+    for (const rel of [/\srel="icon"/, /\srel="apple-touch-icon"/]) {
+      const [tag] = tags(html, "link", rel);
+      assert.ok(tag, `${name} names no ${rel.source}`);
+      const target = href(tag, "href");
+      assert.ok(target.startsWith("/") && !target.startsWith("//"), `${name} reads ${target} from outside the site`);
+      assert.ok(existsSync(join(out, target)), `${name} names ${target}, which was not written`);
+    }
+  }
+});
+
+test("site-icons-have-the-sizes-the-browsers-read", () => {
+  const { out } = built();
+  const html = page(out, ".");
+  const touch = href(tags(html, "link", /\srel="apple-touch-icon"/)[0] ?? "", "href");
+  assert.ok(touch, "the home page names no apple-touch-icon");
+  assert.deepEqual(pngSize(join(out, touch)), { width: 180, height: 180 });
+  const share = href(tags(html, "meta", /property="og:image"/)[0] ?? "", "content").replace(BASE, "");
+  assert.ok(share, "the home page names no og:image");
+  assert.deepEqual(pngSize(join(out, share)), { width: 1200, height: 630 });
+  const svg = href(tags(html, "link", /\srel="icon"/)[0] ?? "", "href");
+  assert.match(readFileSync(join(out, svg), "utf8"), /^<svg [^>]*viewBox="/, `${svg} is not an SVG with a viewBox`);
+});
+
+test("site-pages-name-the-share-image", () => {
+  const { out } = built();
+  for (const file of htmlFiles(out)) {
+    const html = readFileSync(file, "utf8");
+    const name = relative(out, file);
+    const [tag] = tags(html, "meta", /property="og:image"/);
+    assert.ok(tag, `${name} has no og:image`);
+    const content = href(tag, "content");
+    assert.ok(content.startsWith(`${BASE}/`), `${name} names ${content} for og:image, which does not start with the base URL`);
+    assert.ok(existsSync(join(out, content.replace(BASE, ""))), `${name} names ${content}, which was not written`);
+  }
+});
+
+test("site-header-shows-the-logo", () => {
+  const { out } = built();
+  for (const file of htmlFiles(out)) {
+    const html = readFileSync(file, "utf8");
+    const brand = /<a class="brand"[^>]*>([\s\S]*?)<\/a>/.exec(html);
+    assert.ok(brand, `${relative(out, file)} has no brand link in its header`);
+    assert.match(brand[1], /^<svg class="logo"[\s\S]*<\/svg>musubi$/, `${relative(out, file)} has no logo left of the name`);
+  }
+});
+
+test("site-home-follows-the-chosen-design", () => {
+  const { out } = built();
+  for (const path of [".", "ja"]) {
+    const html = page(out, path);
+    const order = [...html.matchAll(/<section [^>]*data-home="([a-z]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(order, ["hero", "how", "registered", "next"], `${path}: the home sections are not in the chosen order`);
+    const binding = /<figure class="binding"[^>]*>([\s\S]*?)<\/figure>/.exec(html);
+    assert.ok(binding, `${path}: the hero has no binding diagram`);
+    assert.match(binding[1], /data-provider="alice\/skills-a\/design-doc"/, `${path}: the diagram does not show the provider`);
+    assert.match(binding[1], /data-follower="alice\/skills-a\/api-design"/, `${path}: the diagram does not show the follower`);
+    const tabs = [...html.matchAll(/<button [^>]*data-cmd="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(tabs, ["npm install -g musubi-cli", "pnpm add -g musubi-cli", "npx musubi-cli check skills"]);
+    assert.equal([...html.matchAll(/data-step="\d"/g)].length, 3, `${path}: the how section does not have three steps`);
+    assert.match(html, /prefers-reduced-motion|data-motion/, `${path}: the hero has no motion`);
+  }
+});
+
+test("site-pages-share-one-stylesheet", () => {
+  const { out } = built();
+  for (const file of htmlFiles(out)) {
+    const html = readFileSync(file, "utf8");
+    const name = relative(out, file);
+    const sheets = tags(html, "link", /\srel="stylesheet"/).map((tag) => href(tag, "href")).filter((h) => h.startsWith("/"));
+    assert.deepEqual(sheets, ["/assets/site.css"], `${name} reads other stylesheets`);
+    assert.equal([...html.matchAll(/<header class="header">/g)].length, 1, `${name} has no single header`);
+    assert.equal([...html.matchAll(/<footer class="footer">/g)].length, 1, `${name} has no single footer`);
+  }
+});
+
 test("registry-entries-are-well-formed", () => {
   const registry = join(root, "registry");
   assert.ok(existsSync(registry), "registry/ is missing");
