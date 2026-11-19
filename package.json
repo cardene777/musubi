@@ -31,7 +31,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test": "node --test --test-reporter=tap tests/*.test.ts",
-    "prepack": "tsc -p tsconfig.build.json"
+    "prepack": "tsc -p tsconfig.build.json",
+    "site": "node site/build.ts && node site/serve.ts",
+    "site:build": "node site/build.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -64,6 +64,24 @@ node src/cli.ts check examples/skills
 node src/cli.ts graph examples/skills --out graph.html
 ```
 
+## Listing a skill on the site
+
+The musubi site shows the definition and the skills named in `registry/`, with what each one provides, what it follows, and which skills follow it.
+Each repository has one file, `registry/<owner>/<repo>.json`, which lists the folders of the skills to show, relative to the repository root.
+
+```json
+{
+  "skills": ["plugins/doc-formats/skills/design-doc", "plugins/evm-dev/skills/contract-design"]
+}
+```
+
+To list your skills, send a pull request that adds or changes that file.
+The site reads each folder's `musubi.json` and `SKILL.md` from the repository's default branch on GitHub, so the repository must be public.
+A folder whose `musubi.json` cannot be read is named when the site is built and left out.
+
+To build the site and open it on your machine at <http://localhost:3810/>, run `pnpm site`.
+It runs `node site/build.ts`, which writes the pages to `site/dist/`, and then serves that folder.
+
 ## Documents
 
 | Document | Holds |

@@ -9,6 +9,9 @@
 | `src/` | `musubi`の命令 (`check`、`add`、`graph`) | `package.json` |
 | `tests/` | `node --test`のテスト | `package.json` |
 | `examples/skills/` | 出す側1つと使う側1つの例のスキル | `spec/musubi.md` |
+| `registry/<持ち主>/<repo>.json` | サイトに見せるスキルのフォルダを、repoごとに1つのfileで並べた登録 | `docs/adr/0005-registry-lists-skill-folders.md` |
+| `site/` | サイトを組み立てる`build.ts`と、手元で配る`serve.ts`。頁は`site/dist/`へ書き、npmへは出さない | `package.json` |
+| `design/site.pen` | Pencilで描いたサイトの画面 | `AGENTS.md` |
 | `GLOSSARY.md`、`GLOSSARY.ja.md` | 定義が使う語 | `GLOSSARY.md` |
 | `docs/adr/` | 戻すのが高くつく判断の記録 | `docs/adr/` |
 | `.ikkan/` | ikkanの記録。配らない | `AGENTS.md` |

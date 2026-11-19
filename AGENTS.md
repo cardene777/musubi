@@ -14,6 +14,9 @@ schema/<date>/        JSON Schemas of musubi.json and check files, one folder pe
 src/                  The musubi command: check, add, graph
 tests/                Tests run with node --test
 examples/skills/      One provider skill and one consumer skill
+registry/             registry/<owner>/<repo>.json lists the skill folders the site shows, one file per repository
+site/                 The site: build.ts writes the pages to site/dist/, serve.ts serves them; not shipped
+design/site.pen       The site's screens, drawn in Pencil
 GLOSSARY.md           Terms the definition uses
 docs/adr/             Decisions that are costly to reverse
 .ikkan/               Records kept by the ikkan workflow, not shipped
@@ -27,7 +30,7 @@ docs/adr/             Decisions that are costly to reverse
 - The records under `.ikkan/` are written by the ikkan workflow in Japanese.
 - The definition dates live only in the folder names under `schema/`. Do not write them in `src/`.
 - The command has no runtime dependencies. Development dependencies are installed with pnpm.
-- Do not include personal data in files, commits, or pull requests: local paths such as `/Users/<name>`, email addresses, or account names. The account name appears only in `LICENSE` and in the repository URL in `package.json`, and the test `account-name-only-in-license-and-package` checks this.
+- Do not include personal data in files, commits, or pull requests: local paths such as `/Users/<name>`, email addresses, or account names. The account name appears only in `LICENSE`, in the repository URL in `package.json`, in the registry entries under `registry/`, and in the site design under `design/`, and the test `account-name-only-in-license-and-package` checks this.
 - Do not add CI workflows.
 
 ## Verifying a change
