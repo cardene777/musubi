@@ -1,9 +1,18 @@
 {
-  "name": "musubi",
-  "version": "0.0.0",
-  "private": true,
+  "name": "musubi-cli",
+  "version": "0.1.0",
   "description": "Binds the content one agent skill provides to the skills that follow it, and checks them again when that content changes",
+  "keywords": [
+    "agent-skills",
+    "skills",
+    "SKILL.md",
+    "dependencies"
+  ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cardene777/musubi.git"
+  },
   "type": "module",
   "bin": {
     "musubi": "dist/cli.js"
@@ -21,7 +30,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "node --test --test-reporter=tap tests/*.test.ts"
+    "test": "node --test --test-reporter=tap tests/*.test.ts",
+    "prepack": "tsc -p tsconfig.build.json"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

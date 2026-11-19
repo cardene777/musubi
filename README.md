@@ -45,6 +45,18 @@ The consumer's `SKILL.md` body tells the agent to open the `design-doc` skill by
 
 The `musubi` command checks the declarations and applies each provider's check to the consumers' examples.
 It needs Node.js 22.18 or later and has no runtime dependencies.
+It is published on npm as `musubi-cli`; once installed, run it in a project folder.
+
+```bash
+npm install -g musubi-cli
+musubi check
+musubi graph --out graph.html
+```
+
+Without folders, `musubi check` reads `.claude/skills`, `.agents/skills`, `.github/skills`, and `.gemini/skills` in the current folder and in the home folder.
+To run it once without installing, use `npx musubi-cli check <skills folder>`.
+
+To run it from a clone of this repository, install the development dependencies first.
 
 ```bash
 pnpm install
