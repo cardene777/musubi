@@ -8,10 +8,17 @@ import { Report } from "./report.ts";
 import { format } from "./semver.ts";
 import { fingerprintFiles } from "./skills.ts";
 
-// The three lines a consumer's SKILL.md body carries for one content it follows.
-export function bodyLines(skill: string, content: string): string[] {
+// Content files an agent runs rather than reads, told apart by their extension in any case.
+const SCRIPT = /\.(py|sh|bash|js|mjs|cjs|ts)$/i;
+
+// The three lines a consumer's SKILL.md body carries for one content it follows. The first line
+// tells the agent to run a script and to read anything else as a format.
+export function bodyLines(skill: string, content: string, file: string): string[] {
+  const use = SCRIPT.test(file)
+    ? `Run the \`${content}\` of the \`${skill}\` skill: open the \`${skill}\` skill by name and run the file it names for \`${content}\`.`
+    : `Write in the \`${content}\` format of the \`${skill}\` skill: open the \`${skill}\` skill by name and read the file it names for \`${content}\`.`;
   return [
-    `Write in the \`${content}\` format of the \`${skill}\` skill: open the \`${skill}\` skill by name and read the file it names for \`${content}\`.`,
+    use,
     "If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.",
     `If the \`${skill}\` skill is not installed, do not start: tell the user that \`${skill}\` is missing and how to install it, then stop.`,
   ];
@@ -54,6 +61,6 @@ export function add(ref: string, roots: string[], cwd: string): number {
   json.follows = follows;
   writeFileSync(path, `${JSON.stringify(json, null, 2)}\n`);
   process.stderr.write(`musubi add: wrote ${ref} ^${format(provided.version)} to ${basename(cwd)}/musubi.json\n`);
-  process.stdout.write(`${bodyLines(skillName, content).join("\n")}\n`);
+  process.stdout.write(`${bodyLines(skillName, content, provided.file).join("\n")}\n`);
   return 0;
 }

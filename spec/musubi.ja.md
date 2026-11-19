@@ -96,6 +96,13 @@ If the `musubi` command is available, run `musubi check` before reading, and sto
 If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.
 ```
 
+中身のfileが命令のscriptの時は、1行目が書式として読む代わりに回すことを伝える。
+scriptかどうかは、大文字と小文字を問わず拡張子`.py`、`.sh`、`.bash`、`.js`、`.mjs`、`.cjs`、`.ts`で見分ける。
+
+```text
+Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.
+```
+
 使う側は、従う中身に自分の節を足せる。
 出す側の検査が求める物を外すことと、名前を変えることはできない。
 1つのスキルが中身を出し、同時に別の中身に従ってもよい。

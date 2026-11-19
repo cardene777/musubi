@@ -48,3 +48,48 @@ test("add-refuses-an-unknown-content", () => {
   assert.match(r.stderr, /design-doc\/nope/);
   assert.equal(existsSync(join(consumer, "musubi.json")), false);
 });
+
+// addLines <file>: the lines musubi add prints for a content stored in a file of that name.
+function addLines(file: string): string[] {
+  const set = skills({
+    "design-doc": { provides: { thing: { version: "1.0.0", file, text: "content\n" } } },
+    "api-design": { noJson: true },
+  });
+  const r = run(["add", "design-doc/thing"], { cwd: join(set.dir, "skills/api-design") });
+  assert.equal(r.code, 0, r.stderr);
+  return r.stdout.split("\n").filter((line) => line.trim() !== "" && !line.startsWith("musubi add:"));
+}
+
+const RUN_LINE =
+  "Run the `thing` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `thing`.";
+const SCRIPTS = ["scripts/a.py", "scripts/a.sh", "scripts/a.bash", "scripts/a.js", "scripts/a.mjs", "scripts/a.cjs", "scripts/a.ts", "scripts/A.PY"];
+
+test("add-prints-the-run-line-for-a-script", () => {
+  for (const file of SCRIPTS) {
+    const lines = addLines(file);
+    assert.equal(lines[0], RUN_LINE, file);
+    assert.equal(lines.length, 3, file);
+  }
+});
+
+test("add-does-not-call-a-script-a-format", () => {
+  for (const file of SCRIPTS) {
+    for (const line of addLines(file)) {
+      assert.doesNotMatch(line, /format|read the file/, `${file}: ${line}`);
+    }
+  }
+});
+
+test("add-keeps-the-format-lines", () => {
+  assert.deepEqual(addLines("formats/thing.md"), [
+    "Write in the `thing` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `thing`.",
+    "If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.",
+    "If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.",
+  ]);
+});
+
+test("add-prints-the-format-line-for-other-files", () => {
+  for (const file of ["data/thing.json", "notes/thing.txt", "THING"]) {
+    assert.match(addLines(file)[0], /^Write in the `thing` format of the `design-doc` skill: /, file);
+  }
+});
