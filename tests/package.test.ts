@@ -122,8 +122,16 @@ test("packed-files-leave-out-the-sources", () => {
 test("account-name-only-in-license-and-package", () => {
   const owner = /github\.com\/([^/]+)\/musubi/.exec(manifest().url)?.[1];
   assert.ok(owner, "package.json has no repository URL to read the owner from");
+  // Registry entries name their repository's owner, and the site design draws real entries,
+  // so registry/ and design/ may hold it too.
   const found = repoFiles()
-    .filter((path) => path !== "LICENSE" && path !== "package.json")
+    .filter((path) => path !== "LICENSE" && path !== "package.json" && !/^(registry|design)\//.test(path))
     .filter((path) => readFileSync(join(root, path)).includes(owner));
-  assert.deepEqual(found, [], "files other than LICENSE and package.json name the account");
+  assert.deepEqual(found, [], "files other than LICENSE, package.json, registry/, and design/ name the account");
+});
+
+test("packed-files-leave-out-the-site", () => {
+  const { files } = pack();
+  const leaked = files.filter((path) => /^(site|registry|design)\//.test(path));
+  assert.deepEqual(leaked, [], "the package holds the site, the registry, or the design");
 });
