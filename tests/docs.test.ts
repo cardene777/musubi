@@ -100,3 +100,11 @@ test("readme-links-the-spec-and-shows-the-example", () => {
     assert.ok(blocks.some((block) => block.includes('"follows"')), `${readme} has no consumer example`);
   }
 });
+
+test("spec-shows-the-run-line-for-a-script", () => {
+  const line =
+    "Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.";
+  for (const path of [spec, specJa]) {
+    assert.ok(readFileSync(path, "utf8").includes(line), `${path} does not show the run line`);
+  }
+});
