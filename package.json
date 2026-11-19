@@ -1,0 +1,18 @@
+{
+  "name": "musubi",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Binds the content one agent skill provides to the skills that follow it, and checks them again when that content changes",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=tap tests/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "ajv": "^8.17.1",
+    "typescript": "^5.9.2"
+  }
+}
