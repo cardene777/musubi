@@ -41,3 +41,9 @@
 | 例の`SKILL.md`は頭に`name`と`description`だけを持つ | `node --test tests/examples.test.ts`の検査`examples-keep-the-agent-skills-frontmatter`が通る | #3 |
 | 例の`musubi.json`は`$schema`でスキーマを指す | `node --test tests/examples.test.ts`の検査`examples-point-at-the-schema`が通る | #3 |
 | 使う側の例の本文は、従う中身、読む前に照らす、出す側が無い時は止めるの3行を持つ | `node --test tests/examples.test.ts`の検査`examples-consumer-body-has-the-three-lines`が通る | #3 |
+| 中身のfileの拡張子が`.py`、`.sh`、`.bash`、`.js`、`.mjs`、`.cjs`、`.ts`の時、大文字と小文字を問わず、`musubi add`は1行目に「Run the `<content>` of the `<skill>` skill: open the `<skill>` skill by name and run the file it names for `<content>`.」を出す | `pnpm test`の検査`add-prints-the-run-line-for-a-script`が通る | #6 |
+| 命令のfileの中身に`musubi add`が出す行は、`format`の語と`read the file`の語を持たない | `pnpm test`の検査`add-does-not-call-a-script-a-format`が通る | #6 |
+| 中身のfileが`.md`の時、`musubi add`が出す3行は今と一字も変わらない | `pnpm test`の検査`add-keeps-the-format-lines`と`add-prints-the-body-lines`が通る | #6 |
+| 中身のfileが`.json`、`.txt`、拡張子の無いfileの時も、`musubi add`は今の書式の行を出す | `pnpm test`の検査`add-prints-the-format-line-for-other-files`が通る | #6 |
+| `spec/musubi.md`と`spec/musubi.ja.md`は、命令のfileの中身に出す1行目を、`musubi add`が出す文と同じ文で示す | `pnpm test`の検査`spec-shows-the-run-line-for-a-script`が通る | #6 |
+| 2つの仕様のページの形 (見出しと表と囲み) は、英語と日本語で揃ったままである | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #6 |
