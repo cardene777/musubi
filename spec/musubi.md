@@ -93,6 +93,12 @@ If the `musubi` command is available, run `musubi check` before reading, and sto
 If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.
 ```
 
+When the content's file is a script, told apart by the extensions `.py`, `.sh`, `.bash`, `.js`, `.mjs`, `.cjs`, and `.ts` in any case, the first line tells the agent to run it instead of reading it as a format.
+
+```text
+Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.
+```
+
 A consumer may add its own sections to the content it follows.
 It may not remove or rename what the provider's check requires.
 A skill may both provide content and follow content; a provider's format may follow shared writing rules, for example.
