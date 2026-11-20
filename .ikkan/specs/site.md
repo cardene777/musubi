@@ -72,4 +72,9 @@
 | ビルドが落ちた時、公開の命令は`gh-pages`へ送らない | `pnpm test`の検査`publish-refuses-when-the-build-fails`が通る | #20 |
 | `README.md`と`README.ja.md`は、サイトを組み立てる命令と、本人のスキルを並べる`registry/<owner>/<repo>.json`を示す | `pnpm test`の検査`readme-shows-how-to-register`が通る | #20 |
 | `registry/`の下のfileは、`registry/<持ち主>/<repo>.json`と`registry/excluded.json`だけで、どちらも決まった形を持つ | `pnpm test`の検査`registry-entries-are-well-formed`が通る | #20 |
-| 英語の文書と日本語の対の文書は、同じ見出しと表とコードの塊を持つ | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #20 |
+| 英語の文書と日本語の対の文書は、同じ見出しと表とコードの塊を持つ | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #20 #27 |
+| 英語と日本語の一覧とスキルのページと`README.md`と`README.ja.md`は、内容と安全性を確かめていないという注意の文を出さない | `pnpm test`の検査`site-pages-show-no-review-notice`が通る | #27 |
+| 日本語の文書は、サイトを持つ人を「運営」と書かない | `pnpm test`の検査`ja-docs-use-the-glossary-terms`が通る | #27 |
+| サイトの日本語の文言は、サイトを持つ人を「運営」と書かない | `pnpm test`の検査`site-ja-text-uses-the-glossary-terms`が通る | #27 |
+| トップの「スキルを載せる」とREADMEは、トピック`musubi-skills`を付ければ載ると案内する | `pnpm test`の検査`site-tells-authors-to-add-the-topic`が通る | #27 |
+| トピック`musubi-skills`を持つ公開リポジトリのスキルは一覧とスキルのページに載る | `pnpm test`の検査`site-lists-skills-found-by-the-topic`が通る | #27 |
