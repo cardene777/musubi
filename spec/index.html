@@ -33,7 +33,7 @@
 <header class="header"><div class="wrap">
 <div class="left">
 <a class="brand" href="/"><svg class="logo" width="26" height="26" aria-hidden="true" viewBox="1 1 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="provider" d="M10.3 9.5C8.4 7.1 5.6 5.3 4 6.5C2.4 7.7 2.6 11.5 4.4 12.9C6.2 14.3 8.6 12.9 10.3 11.5M11 12.4C10.4 14.8 9.4 17 8 19.6"/><path class="follower" d="M13.7 9.5C15.6 7.1 18.4 5.3 20 6.5C21.6 7.7 21.4 11.5 19.6 12.9C17.8 14.3 15.4 12.9 13.7 11.5M13 12.4C13.6 14.8 14.6 17 16 19.6"/><path class="knot" d="M10.2 9.3a1.2 1.2 0 0 1 1.2-1.2h1.2a1.2 1.2 0 0 1 1.2 1.2v2.4a1.2 1.2 0 0 1-1.2 1.2h-1.2a1.2 1.2 0 0 1-1.2-1.2z"/></svg>musubi</a>
-<nav class="nav"><a href="/spec/" aria-current="page">Definition</a><a href="/skills/">Skills</a><a href="https://github.com/cardene777/musubi">GitHub</a></nav>
+<nav class="nav"><a href="/spec/" aria-current="page">Definition</a><a href="/skills/">Skills</a><a target="_blank" rel="noopener" href="https://github.com/cardene777/musubi">GitHub</a></nav>
 </div>
 <div class="right">
 <div class="lang"><span aria-current="true">English</span><a data-lang-switch hreflang="ja" lang="ja" href="/ja/spec/">日本語</a></div>
@@ -71,7 +71,7 @@
     ├── SKILL.md             three lines that point at design-doc/design
     ├── musubi.json          &quot;follows&quot;: design-doc/design ^1.0.0 and its fingerprint
     └── examples/orders-api.md   an example the check is applied to</code></pre>
-<p><a href="https://github.com/cardene777/musubi/blob/HEAD/GLOSSARY.md" rel="noopener">GLOSSARY.md</a> defines the terms used here.</p>
+<p><a href="https://github.com/cardene777/musubi/blob/HEAD/GLOSSARY.md" target="_blank" rel="noopener">GLOSSARY.md</a> defines the terms used here.</p>
 <h2 id="s2">Provider declaration</h2>
 <p>A provider skill lists its content under <code>provides</code> in <code>musubi.json</code>.</p>
 <pre data-lang="json"><code>{
@@ -82,7 +82,7 @@
   }
 }</code></pre>
 <div class="table"><table><thead><tr><th>Field</th><th>Required</th><th>Meaning</th></tr></thead><tbody><tr><td><code>$schema</code></td><td>No</td><td>Where editors find the JSON Schema, <code>schema/&lt;date&gt;/musubi.schema.json</code></td></tr><tr><td><code>musubi</code></td><td>Yes</td><td>The definition version the file follows</td></tr><tr><td><code>provides.&lt;name&gt;</code></td><td>Yes, one per content</td><td>The content name: lowercase words joined by <code>-</code></td></tr><tr><td><code>provides.&lt;name&gt;.version</code></td><td>Yes</td><td>The content's version, <code>MAJOR.MINOR.PATCH</code></td></tr><tr><td><code>provides.&lt;name&gt;.file</code></td><td>Yes</td><td>The content file, relative to the skill folder</td></tr><tr><td><code>provides.&lt;name&gt;.check</code></td><td>No</td><td>A JSON rules file, relative to the skill folder, described in Check rules</td></tr></tbody></table></div>
-<p>Each content is one file with at most one check, and it is named <code>&lt;skill&gt;/&lt;name&gt;</code>, such as <code>design-doc/design</code>. Each content has its own version, so changing one does not change the version of the others. Paths stay inside the skill folder; <code>musubi check</code> refuses absolute paths and paths that leave it. The provider's <code>SKILL.md</code> body names the file of each content, because agents find the file by reading that body (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0002-agents-open-the-provider-by-name.md" rel="noopener">0002</a>). <code>musubi.json</code> is a separate file, not a frontmatter field, so that <code>SKILL.md</code> keeps passing the Agent Skills checks (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0001-declarations-in-musubi-json.md" rel="noopener">0001</a>).</p>
+<p>Each content is one file with at most one check, and it is named <code>&lt;skill&gt;/&lt;name&gt;</code>, such as <code>design-doc/design</code>. Each content has its own version, so changing one does not change the version of the others. Paths stay inside the skill folder; <code>musubi check</code> refuses absolute paths and paths that leave it. The provider's <code>SKILL.md</code> body names the file of each content, because agents find the file by reading that body (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0002-agents-open-the-provider-by-name.md" target="_blank" rel="noopener">0002</a>). <code>musubi.json</code> is a separate file, not a frontmatter field, so that <code>SKILL.md</code> keeps passing the Agent Skills checks (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0001-declarations-in-musubi-json.md" target="_blank" rel="noopener">0001</a>).</p>
 <h2 id="s3">Consumer declaration</h2>
 <p>A consumer skill lists the content it follows under <code>follows</code> in <code>musubi.json</code>.</p>
 <pre data-lang="json"><code>{
@@ -102,7 +102,7 @@ If the `musubi` command is available, run `musubi check` before reading, and sto
 If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.</code></pre>
 <p>When the content's file is a script, told apart by the extensions <code>.py</code>, <code>.sh</code>, <code>.bash</code>, <code>.js</code>, <code>.mjs</code>, <code>.cjs</code>, and <code>.ts</code> in any case, the first line tells the agent to run it instead of reading it as a format.</p>
 <pre data-lang="text"><code>Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.</code></pre>
-<p>A consumer that also works without the provider writes <code>optional: true</code> in that follow, which makes it an optional follow (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0007-optional-follows.md" rel="noopener">0007</a>). For an optional follow, <code>musubi add --optional</code> prints these three lines instead.</p>
+<p>A consumer that also works without the provider writes <code>optional: true</code> in that follow, which makes it an optional follow (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0007-optional-follows.md" target="_blank" rel="noopener">0007</a>). For an optional follow, <code>musubi add --optional</code> prints these three lines instead.</p>
 <pre data-lang="text"><code>When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
 If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
 If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.</code></pre>
@@ -124,7 +124,7 @@ If the `design-doc` skill is not installed, go on without the `design` of `desig
     hash.update(the file's bytes)
     hash.update(&quot;\n&quot;)
 integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
-<p>Paths are relative to the provider's skill folder and use <code>/</code>. The range and the fingerprint sit together in <code>musubi.json</code>; there is no lockfile (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.md" rel="noopener">0003</a>).</p>
+<p>Paths are relative to the provider's skill folder and use <code>/</code>. The range and the fingerprint sit together in <code>musubi.json</code>; there is no lockfile (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.md" target="_blank" rel="noopener">0003</a>).</p>
 <p>The definition itself is versioned by date. Each <code>musubi.json</code> and each check file names the date it follows in <code>musubi</code>, and <code>musubi check</code> reads every date it knows and refuses the others. The dates it knows are the folders under <code>schema/</code>. Definition version <code>2026-11-20</code> added <code>follows.&lt;ref&gt;.optional</code>; a <code>musubi.json</code> that names <code>2026-11-19</code> still passes and may not use it.</p>
 <h2 id="s6">Re-checking</h2>
 <p>A consumer is checked again after a skill is installed, after a skill is updated, and, when the <code>musubi</code> command is available, before an agent reads the content.</p>
@@ -133,7 +133,7 @@ integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
 <p>When the skill of an optional follow is not installed, <code>musubi check</code> warns and skips that follow; when it is installed, the follow is checked like any other. Chains of any depth are allowed as long as they do not form a cycle. When a fingerprint does not match, <code>musubi check</code> does not apply that provider's check, because its content has not been accepted. <code>musubi check --update</code> applies the check to the changed content and rewrites the fingerprint only when every example passes; when one fails, the fingerprint stays as it was. <code>musubi check</code> without <code>--update</code> never writes a file.</p>
 <div class="table"><table><thead><tr><th>Exit status</th><th>Meaning</th></tr></thead><tbody><tr><td><code>0</code></td><td>Every declaration and example passed; warnings may be printed</td></tr><tr><td><code>1</code></td><td>At least one problem, printed as <code>&lt;file&gt;:&lt;line&gt;: &lt;message&gt;</code></td></tr><tr><td><code>2</code></td><td>The command was called the wrong way</td></tr></tbody></table></div>
 <h2 id="s7">Check rules</h2>
-<p>A check file is JSON with the definition version and a list of rules. <code>musubi check</code> reads the rules and applies them to each example the consumer names; it never runs provider code (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0004-checks-are-json-rules.md" rel="noopener">0004</a>).</p>
+<p>A check file is JSON with the definition version and a list of rules. <code>musubi check</code> reads the rules and applies them to each example the consumer names; it never runs provider code (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0004-checks-are-json-rules.md" target="_blank" rel="noopener">0004</a>).</p>
 <pre data-lang="json"><code>{
   &quot;musubi&quot;: &quot;2026-11-19&quot;,
   &quot;rules&quot;: [
@@ -153,8 +153,8 @@ integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
 </div></div>
 </main>
 <footer class="footer"><div class="wrap">
-<a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MIT License</a>
-<div class="versions"><span>Definition 2026-11-20</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.2.0</a></div>
+<a class="muted" target="_blank" rel="noopener" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MIT License</a>
+<div class="versions"><span>Definition 2026-11-20</span><a class="muted" target="_blank" rel="noopener" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.2.0</a></div>
 </div></footer>
 <script>
 document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});

@@ -33,7 +33,7 @@
 <header class="header"><div class="wrap">
 <div class="left">
 <a class="brand" href="/ja/"><svg class="logo" width="26" height="26" aria-hidden="true" viewBox="1 1 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="provider" d="M10.3 9.5C8.4 7.1 5.6 5.3 4 6.5C2.4 7.7 2.6 11.5 4.4 12.9C6.2 14.3 8.6 12.9 10.3 11.5M11 12.4C10.4 14.8 9.4 17 8 19.6"/><path class="follower" d="M13.7 9.5C15.6 7.1 18.4 5.3 20 6.5C21.6 7.7 21.4 11.5 19.6 12.9C17.8 14.3 15.4 12.9 13.7 11.5M13 12.4C13.6 14.8 14.6 17 16 19.6"/><path class="knot" d="M10.2 9.3a1.2 1.2 0 0 1 1.2-1.2h1.2a1.2 1.2 0 0 1 1.2 1.2v2.4a1.2 1.2 0 0 1-1.2 1.2h-1.2a1.2 1.2 0 0 1-1.2-1.2z"/></svg>musubi</a>
-<nav class="nav"><a href="/ja/spec/" aria-current="page">定義</a><a href="/ja/skills/">スキル</a><a href="https://github.com/cardene777/musubi">GitHub</a></nav>
+<nav class="nav"><a href="/ja/spec/" aria-current="page">定義</a><a href="/ja/skills/">スキル</a><a target="_blank" rel="noopener" href="https://github.com/cardene777/musubi">GitHub</a></nav>
 </div>
 <div class="right">
 <div class="lang"><a data-lang-switch hreflang="en" lang="en" href="/spec/">English</a><span aria-current="true">日本語</span></div>
@@ -71,7 +71,7 @@
     ├── SKILL.md             design-doc/design を指す3行
     ├── musubi.json          &quot;follows&quot;: design-doc/design ^1.0.0 とフィンガープリント
     └── examples/orders-api.md   チェックを適用する例</code></pre>
-<p>ここで使う用語は<a href="https://github.com/cardene777/musubi/blob/HEAD/GLOSSARY.ja.md" rel="noopener">GLOSSARY.ja.md</a>で定義する。</p>
+<p>ここで使う用語は<a href="https://github.com/cardene777/musubi/blob/HEAD/GLOSSARY.ja.md" target="_blank" rel="noopener">GLOSSARY.ja.md</a>で定義する。</p>
 <h2 id="s2">providerの宣言</h2>
 <p>providerのスキルは、提供するコンテンツを<code>musubi.json</code>の<code>provides</code>に並べる。</p>
 <pre data-lang="json"><code>{
@@ -82,8 +82,8 @@
   }
 }</code></pre>
 <div class="table"><table><thead><tr><th>フィールド</th><th>必須</th><th>意味</th></tr></thead><tbody><tr><td><code>$schema</code></td><td>いいえ</td><td>エディタがJSON Schemaを見つける場所。<code>schema/&lt;日付&gt;/musubi.schema.json</code>を指す</td></tr><tr><td><code>musubi</code></td><td>はい</td><td>このファイルが準拠する定義のバージョン</td></tr><tr><td><code>provides.&lt;名前&gt;</code></td><td>コンテンツごとに1つ</td><td>コンテンツの名前。小文字の単語を<code>-</code>でつなぐ</td></tr><tr><td><code>provides.&lt;名前&gt;.version</code></td><td>はい</td><td>コンテンツのバージョン。<code>MAJOR.MINOR.PATCH</code>の形で書く</td></tr><tr><td><code>provides.&lt;名前&gt;.file</code></td><td>はい</td><td>コンテンツのファイル。スキルのフォルダからの相対パスで書く</td></tr><tr><td><code>provides.&lt;名前&gt;.check</code></td><td>いいえ</td><td>JSONのルールのファイル。スキルのフォルダからの相対パスで書き、形はチェックのルールの節で定める</td></tr></tbody></table></div>
-<p>コンテンツは1つのファイルと、最大1つのチェックからなり、<code>design-doc/design</code>のように<code>&lt;スキル名&gt;/&lt;名前&gt;</code>で呼ぶ。コンテンツごとにバージョンを持つので、1つを変えても、ほかのコンテンツのバージョンは変わらない。パスはスキルのフォルダの中に限り、<code>musubi check</code>は絶対パスとフォルダの外へ出るパスを拒否する。エージェントはproviderの<code>SKILL.md</code>の本文を読んでファイルを見つけるので、providerの本文はコンテンツごとにファイルを指定する (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0002-agents-open-the-provider-by-name.ja.md" rel="noopener">0002</a>)。</p>
-<p>宣言をフロントマターの項目でなく別の<code>musubi.json</code>に書くのは、<code>SKILL.md</code>がAgent Skillsのチェックを通り続けるようにするためである (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0001-declarations-in-musubi-json.ja.md" rel="noopener">0001</a>)。</p>
+<p>コンテンツは1つのファイルと、最大1つのチェックからなり、<code>design-doc/design</code>のように<code>&lt;スキル名&gt;/&lt;名前&gt;</code>で呼ぶ。コンテンツごとにバージョンを持つので、1つを変えても、ほかのコンテンツのバージョンは変わらない。パスはスキルのフォルダの中に限り、<code>musubi check</code>は絶対パスとフォルダの外へ出るパスを拒否する。エージェントはproviderの<code>SKILL.md</code>の本文を読んでファイルを見つけるので、providerの本文はコンテンツごとにファイルを指定する (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0002-agents-open-the-provider-by-name.ja.md" target="_blank" rel="noopener">0002</a>)。</p>
+<p>宣言をフロントマターの項目でなく別の<code>musubi.json</code>に書くのは、<code>SKILL.md</code>がAgent Skillsのチェックを通り続けるようにするためである (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0001-declarations-in-musubi-json.ja.md" target="_blank" rel="noopener">0001</a>)。</p>
 <h2 id="s3">consumerの宣言</h2>
 <p>consumerのスキルは、準拠するコンテンツを<code>musubi.json</code>の<code>follows</code>に並べる。</p>
 <pre data-lang="json"><code>{
@@ -103,7 +103,7 @@ If the `musubi` command is available, run `musubi check` before reading, and sto
 If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.</code></pre>
 <p>コンテンツのファイルがスクリプトの時は、1行目が、書式として読む代わりに実行するようエージェントに伝える。スクリプトかどうかは拡張子<code>.py</code>、<code>.sh</code>、<code>.bash</code>、<code>.js</code>、<code>.mjs</code>、<code>.cjs</code>、<code>.ts</code>で判定し、大文字と小文字は区別しない。</p>
 <pre data-lang="text"><code>Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.</code></pre>
-<p>providerのスキルがインストールされていなくても動くconsumerは、その準拠に<code>optional: true</code>を書く。この準拠を任意の準拠と呼ぶ (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0007-optional-follows.ja.md" rel="noopener">0007</a>)。任意の準拠では、<code>musubi add --optional</code>が代わりに次の3行を出力する。</p>
+<p>providerのスキルがインストールされていなくても動くconsumerは、その準拠に<code>optional: true</code>を書く。この準拠を任意の準拠と呼ぶ (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0007-optional-follows.ja.md" target="_blank" rel="noopener">0007</a>)。任意の準拠では、<code>musubi add --optional</code>が代わりに次の3行を出力する。</p>
 <pre data-lang="text"><code>When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
 If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
 If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.</code></pre>
@@ -125,7 +125,7 @@ If the `design-doc` skill is not installed, go on without the `design` of `desig
     hash.update(the file's bytes)
     hash.update(&quot;\n&quot;)
 integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
-<p>パスはproviderのスキルのフォルダからの相対パスで、区切りに<code>/</code>を使う。バージョンの範囲とフィンガープリントは<code>musubi.json</code>に並べて書き、ロックファイルは持たない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.ja.md" rel="noopener">0003</a>)。</p>
+<p>パスはproviderのスキルのフォルダからの相対パスで、区切りに<code>/</code>を使う。バージョンの範囲とフィンガープリントは<code>musubi.json</code>に並べて書き、ロックファイルは持たない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.ja.md" target="_blank" rel="noopener">0003</a>)。</p>
 <p>定義そのもののバージョンは日付で表す。<code>musubi.json</code>とチェックのファイルは、準拠する日付を<code>musubi</code>のフィールドに書く。<code>musubi check</code>は知っている日付を全て読み、それ以外の日付を拒否する。知っている日付は、<code>schema/</code>の下にあるフォルダの名前である。定義のバージョン<code>2026-11-20</code>で<code>follows.&lt;参照&gt;.optional</code>を加えた。<code>2026-11-19</code>を書いた<code>musubi.json</code>は今も通り、<code>optional</code>は書けない。</p>
 <h2 id="s6">再チェック</h2>
 <p>consumerは、スキルをインストールした後と、スキルを更新した後に再チェックされる。<code>musubi</code>コマンドが使える時は、エージェントがコンテンツを読む前にも再チェックされる。</p>
@@ -135,7 +135,7 @@ integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
 <p>1つでも通らなかった時は、フィンガープリントを元のまま残す。<code>--update</code>を付けない<code>musubi check</code>は、ファイルを書き込まない。</p>
 <div class="table"><table><thead><tr><th>終了コード</th><th>意味</th></tr></thead><tbody><tr><td><code>0</code></td><td>全ての宣言と例が通った。警告を出力することがある</td></tr><tr><td><code>1</code></td><td>1つ以上の問題があり、<code>&lt;ファイル&gt;:&lt;行&gt;: &lt;メッセージ&gt;</code>の形で出力した</td></tr><tr><td><code>2</code></td><td>コマンドの呼び出し方が間違っている</td></tr></tbody></table></div>
 <h2 id="s7">チェックのルール</h2>
-<p>チェックのファイルは、定義のバージョンとルールの一覧を持つJSONである。<code>musubi check</code>はルールを読み、consumerが指定した例それぞれに適用する。providerのコードは実行しない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0004-checks-are-json-rules.ja.md" rel="noopener">0004</a>)。</p>
+<p>チェックのファイルは、定義のバージョンとルールの一覧を持つJSONである。<code>musubi check</code>はルールを読み、consumerが指定した例それぞれに適用する。providerのコードは実行しない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0004-checks-are-json-rules.ja.md" target="_blank" rel="noopener">0004</a>)。</p>
 <pre data-lang="json"><code>{
   &quot;musubi&quot;: &quot;2026-11-19&quot;,
   &quot;rules&quot;: [
@@ -155,8 +155,8 @@ integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
 </div></div>
 </main>
 <footer class="footer"><div class="wrap">
-<a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MITライセンス</a>
-<div class="versions"><span>定義のバージョン 2026-11-20</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.2.0</a></div>
+<a class="muted" target="_blank" rel="noopener" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MITライセンス</a>
+<div class="versions"><span>定義のバージョン 2026-11-20</span><a class="muted" target="_blank" rel="noopener" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.2.0</a></div>
 </div></footer>
 <script>
 document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
