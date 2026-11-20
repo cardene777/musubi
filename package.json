@@ -33,7 +33,8 @@
     "test": "node --test --test-reporter=tap tests/*.test.ts",
     "prepack": "tsc -p tsconfig.build.json",
     "site": "node site/build.ts && node site/serve.ts",
-    "site:build": "node site/build.ts"
+    "site:build": "node site/build.ts",
+    "site:publish": "node site/publish.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

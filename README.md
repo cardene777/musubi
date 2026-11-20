@@ -81,6 +81,7 @@ A folder whose `musubi.json` cannot be read is named when the site is built and 
 
 To build the site and open it on your machine at <http://localhost:3810/>, run `pnpm site`.
 It runs `node site/build.ts`, which writes the pages to `site/dist/`, and then serves that folder.
+The public site is at <https://musubi.cardene.dev/>, and [docs/publishing.md](docs/publishing.md) explains how to publish it with `pnpm site:publish`.
 
 ## Documents
 
@@ -88,6 +89,7 @@ It runs `node site/build.ts`, which writes the pages to `site/dist/`, and then s
 |---|---|
 | [spec/musubi.md](spec/musubi.md) | The definition |
 | [GLOSSARY.md](GLOSSARY.md) | The terms the definition uses |
+| [docs/publishing.md](docs/publishing.md) | How the site is published to GitHub Pages |
 | [docs/adr](docs/adr) | Decisions that are costly to reverse, with the options not taken |
 
 Japanese: [README.ja.md](README.ja.md)

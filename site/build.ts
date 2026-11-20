@@ -3,7 +3,8 @@
 //   node site/build.ts [--registry <folder>] [--source <folder>] [--out <folder>] [--base-url <url>]
 // It reads the definition from spec/ and the registry from registry/<owner>/<repo>.json, takes each
 // listed skill's musubi.json and SKILL.md from GitHub (or from --source/<owner>/<repo>/<folder>), and
-// writes the English pages at / and the Japanese pages at /ja/, with sitemap.xml, robots.txt, and llms.txt.
+// writes the English pages at / and the Japanese pages at /ja/, with sitemap.xml, robots.txt, and llms.txt,
+// and the CNAME and .nojekyll files GitHub Pages reads (site/publish.ts sends the folder there).
 // A listed folder whose musubi.json cannot be read is named on stderr and left out of the site.
 import { spawnSync } from "node:child_process";
 import {
@@ -27,7 +28,7 @@ import { escape, render } from "./markdown.ts";
 import { fill, type Key, type Lang, TEXT } from "./text.ts";
 
 const root = resolve(import.meta.dirname, "..");
-const DEFAULT_BASE = "https://musubi-skills.pages.dev";
+const DEFAULT_BASE = "https://musubi.cardene.dev";
 const PER_PAGE = 50;
 const LANGS: Lang[] = ["en", "ja"];
 const MARKER = ".musubi-site";
@@ -836,6 +837,10 @@ async function main() {
     "",
   ].join("\n");
   writeFileSync(join(o.out, "llms.txt"), llms);
+  // GitHub Pages serves the site under the host named in CNAME, and .nojekyll has it serve the files
+  // as they are instead of running them through Jekyll.
+  writeFileSync(join(o.out, "CNAME"), `${new URL(o.base).host}\n`);
+  writeFileSync(join(o.out, ".nojekyll"), "");
   process.stderr.write(`musubi site: wrote ${o.out} (pages=${paths.length}, skills=${skills.length}, warnings=${warnings.length})\n`);
 }
 

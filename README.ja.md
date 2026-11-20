@@ -85,6 +85,7 @@ repoごとに1つの`registry/<owner>/<repo>.json`を置き、見せるスキル
 
 サイトを組み立てて手元の<http://localhost:3810/>で開く時は、`pnpm site`を打ちます。
 この命令は`node site/build.ts`で頁を`site/dist/`へ書き出してから、そのフォルダを配ります。
+公開したサイトは<https://musubi.cardene.dev/>にあり、`pnpm site:publish`で公開する手順は[docs/publishing.ja.md](docs/publishing.ja.md)にあります。
 
 ## 文書
 
@@ -92,6 +93,7 @@ repoごとに1つの`registry/<owner>/<repo>.json`を置き、見せるスキル
 |---|---|
 | [spec/musubi.ja.md](spec/musubi.ja.md) | 定義 |
 | [GLOSSARY.ja.md](GLOSSARY.ja.md) | 定義が使う語 |
+| [docs/publishing.ja.md](docs/publishing.ja.md) | サイトをGitHub Pagesへ公開する手順 |
 | [docs/adr](docs/adr) | 戻すのが高くつく判断と、採らなかった案 |
 
 English: [README.md](README.md)
