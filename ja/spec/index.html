@@ -25,9 +25,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="/assets/site.css?v=dc59438ef8db">
+<link rel="stylesheet" href="/assets/site.css?v=ab7e96c5747d">
 <script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"musubiの定義","inLanguage":"ja","url":"https://musubi.cardene.dev/ja/spec/","version":"2026-11-19","translationOfWork":{"@id":"https://musubi.cardene.dev/spec/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"musubiの定義","inLanguage":"ja","url":"https://musubi.cardene.dev/ja/spec/","version":"2026-11-20","translationOfWork":{"@id":"https://musubi.cardene.dev/spec/"}}</script>
 </head>
 <body>
 <header class="header"><div class="wrap">
@@ -54,9 +54,9 @@
 <a href="#s9">musubiコマンド</a>
 </nav>
 <article class="article">
-<div class="version"><span class="chip">定義のバージョン 2026-11-19</span><span>正式な定義は英語の文書で、このページはその日本語訳です</span></div>
+<div class="version"><span class="chip">定義のバージョン 2026-11-20</span><span>正式な定義は英語の文書で、このページはその日本語訳です</span></div>
 <h1>musubiの定義</h1>
-<p>定義のバージョンは<code>2026-11-19</code>。</p>
+<p>定義のバージョンは<code>2026-11-20</code>。</p>
 <p>musubiは、文書の書式や書き方のルールのように、エージェントのスキルが提供するコンテンツと、そのコンテンツに準拠するスキルを結び付ける。あるスキルがコンテンツを名前とバージョン付きで宣言し、別のスキルがそのコンテンツに準拠すると宣言する。<code>SKILL.md</code>を読むエージェントはどれも同じ方法でコンテンツを読み込み、コンテンツが変わると、準拠するスキルが再チェックされる。正式な定義は英語の<a href="/spec/">musubi.md</a>で、この文書はその日本語訳である。</p>
 <h2 id="s1">概要</h2>
 <p>musubiに参加するスキルは、Agent Skillsが定める<code>SKILL.md</code>をそのまま持ち、その隣に<code>musubi.json</code>というファイルを1つ追加する。</p>
@@ -96,17 +96,21 @@
     }
   }
 }</code></pre>
-<div class="table"><table><thead><tr><th>フィールド</th><th>必須</th><th>意味</th></tr></thead><tbody><tr><td><code>follows.&lt;スキル名&gt;/&lt;名前&gt;</code></td><td>コンテンツごとに1つ</td><td>準拠するコンテンツ</td></tr><tr><td><code>follows.&lt;参照&gt;.version</code></td><td>はい</td><td>consumerが受け入れるバージョン。形はバージョンとフィンガープリントの節で定める</td></tr><tr><td><code>follows.&lt;参照&gt;.integrity</code></td><td>はい</td><td>最後にチェックした時のコンテンツのフィンガープリント</td></tr><tr><td><code>follows.&lt;参照&gt;.examples</code></td><td>いいえ</td><td>providerのチェックを適用する、consumerのファイル</td></tr></tbody></table></div>
+<div class="table"><table><thead><tr><th>フィールド</th><th>必須</th><th>意味</th></tr></thead><tbody><tr><td><code>follows.&lt;スキル名&gt;/&lt;名前&gt;</code></td><td>コンテンツごとに1つ</td><td>準拠するコンテンツ</td></tr><tr><td><code>follows.&lt;参照&gt;.version</code></td><td>はい</td><td>consumerが受け入れるバージョン。形はバージョンとフィンガープリントの節で定める</td></tr><tr><td><code>follows.&lt;参照&gt;.integrity</code></td><td>はい</td><td>最後にチェックした時のコンテンツのフィンガープリント</td></tr><tr><td><code>follows.&lt;参照&gt;.examples</code></td><td>いいえ</td><td>providerのチェックを適用する、consumerのファイル</td></tr><tr><td><code>follows.&lt;参照&gt;.optional</code></td><td>いいえ</td><td>providerが無くてもconsumerが動く時に<code>true</code>を書く。下で定める</td></tr></tbody></table></div>
 <p>consumerの<code>SKILL.md</code>の本文には、準拠するコンテンツごとに次の3行を書く。この3行は<code>musubi add</code>が出力する。</p>
 <pre data-lang="text"><code>Write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
 If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
 If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.</code></pre>
 <p>コンテンツのファイルがスクリプトの時は、1行目が、書式として読む代わりに実行するようエージェントに伝える。スクリプトかどうかは拡張子<code>.py</code>、<code>.sh</code>、<code>.bash</code>、<code>.js</code>、<code>.mjs</code>、<code>.cjs</code>、<code>.ts</code>で判定し、大文字と小文字は区別しない。</p>
 <pre data-lang="text"><code>Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.</code></pre>
+<p>providerのスキルがインストールされていなくても動くconsumerは、その準拠に<code>optional: true</code>を書く。この準拠を任意の準拠と呼ぶ (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0007-optional-follows.ja.md" rel="noopener">0007</a>)。任意の準拠では、<code>musubi add --optional</code>が代わりに次の3行を出力する。</p>
+<pre data-lang="text"><code>When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
+If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
+If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.</code></pre>
 <p>consumerは、準拠するコンテンツに自分の節を追加できる。ただし、providerのチェックが求めるものを削除したり、名前を変えたりはできない。1つのスキルが、コンテンツを提供しながら別のコンテンツに準拠してもよい。たとえば、providerの書式が、共通の書き方のルールに準拠することがある。</p>
 <h2 id="s4">見つけ方と読み込み方</h2>
 <p>エージェントは<code>SKILL.md</code>の本文を読んでコンテンツを読み込み、スキルを使っている間に<code>musubi.json</code>を読むことはない。そのため、musubiを知らないエージェントも、<code>musubi</code>コマンドを使えるエージェントと同じ方法でコンテンツを読み込む。</p>
-<ol><li>エージェントは、ほかのスキルと同じように、consumerの<code>SKILL.md</code>を読む。</li><li>本文は、providerのスキルとコンテンツを名前で示す。エージェントはインストール済みのスキルからproviderのスキルを名前で開き、providerの本文がそのコンテンツについて指定するファイルを読む。</li><li>エージェントはそのファイルだけを全文読む。providerのほかのコンテンツは読まない。</li><li>providerのスキルがインストールされていない時、エージェントは作業を始めない。足りないスキルとそのインストール方法をユーザーに伝えて止まる。</li></ol>
+<ol><li>エージェントは、ほかのスキルと同じように、consumerの<code>SKILL.md</code>を読む。</li><li>本文は、providerのスキルとコンテンツを名前で示す。エージェントはインストール済みのスキルからproviderのスキルを名前で開き、providerの本文がそのコンテンツについて指定するファイルを読む。</li><li>エージェントはそのファイルだけを全文読む。providerのほかのコンテンツは読まない。</li><li>providerのスキルがインストールされていない時、エージェントは作業を始めない。足りないスキルとそのインストール方法をユーザーに伝えて止まる。任意の準拠の時は止まらず、そのコンテンツ無しで作業を続ける。</li></ol>
 <p>Claude Code、Codex、GitHub Copilot CLI、Gemini CLIはどれもインストール済みのスキルを名前で一覧にするので、スキルがどこにインストールされていても名前で開ける。別々のプラグインからインストールした2つのスキルは同じ場所に並ぶとは限らないので、スキルのフォルダどうしの相対パスは使わない。</p>
 <p><code>musubi check</code>と<code>musubi graph</code>は、コマンドラインで指定したフォルダからスキルを読む。フォルダを指定しない時は、カレントフォルダとホームフォルダにある<code>.claude/skills</code>、<code>.agents/skills</code>、<code>.github/skills</code>、<code>.gemini/skills</code>を読む。そのいずれかの直下にあり、<code>SKILL.md</code>を持つフォルダがスキルで、スキルの名前はフォルダの名前である。同じ名前のスキルが2つのフォルダにある時は、上の順で先のフォルダのスキルを使い、<code>musubi check</code>がもう一方について警告する。</p>
 <p>エージェントはコンテンツのファイルを全文読むので、<code>musubi check</code>は500行を超えるコンテンツを警告する。500行は、Agent Skillsが<code>SKILL.md</code>に勧める長さである。そのようなコンテンツも拒否はしない。長いコンテンツは、providerが複数のコンテンツに分ける。</p>
@@ -122,12 +126,12 @@ If the `design-doc` skill is not installed, do not start: tell the user that `de
     hash.update(&quot;\n&quot;)
 integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
 <p>パスはproviderのスキルのフォルダからの相対パスで、区切りに<code>/</code>を使う。バージョンの範囲とフィンガープリントは<code>musubi.json</code>に並べて書き、ロックファイルは持たない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.ja.md" rel="noopener">0003</a>)。</p>
-<p>定義そのもののバージョンは日付で表す。<code>musubi.json</code>とチェックのファイルは、準拠する日付を<code>musubi</code>のフィールドに書く。<code>musubi check</code>は知っている日付を全て読み、それ以外の日付を拒否する。知っている日付は、<code>schema/</code>の下にあるフォルダの名前である。</p>
+<p>定義そのもののバージョンは日付で表す。<code>musubi.json</code>とチェックのファイルは、準拠する日付を<code>musubi</code>のフィールドに書く。<code>musubi check</code>は知っている日付を全て読み、それ以外の日付を拒否する。知っている日付は、<code>schema/</code>の下にあるフォルダの名前である。定義のバージョン<code>2026-11-20</code>で<code>follows.&lt;参照&gt;.optional</code>を加えた。<code>2026-11-19</code>を書いた<code>musubi.json</code>は今も通り、<code>optional</code>は書けない。</p>
 <h2 id="s6">再チェック</h2>
 <p>consumerは、スキルをインストールした後と、スキルを更新した後に再チェックされる。<code>musubi</code>コマンドが使える時は、エージェントがコンテンツを読む前にも再チェックされる。</p>
 <p><code>musubi check</code>は次の場合に、ファイルと行を示して拒否する。</p>
-<ul><li><code>musubi.json</code>がJSONとして正しくない、定義にないフィールドを持つ、知らない定義のバージョンを指定している</li><li>バージョンが<code>MAJOR.MINOR.PATCH</code>の形でない、範囲が3つの形のどれでもない</li><li>ファイル、チェック、例のパスがスキルのフォルダの外へ出るか、存在しないファイルを指している</li><li>チェックがJSONのルールのファイルでない</li><li>consumerが、インストールされていないスキルか、そのスキルが提供していないコンテンツに準拠している</li><li>providerのバージョンがconsumerの範囲の外にある</li><li>フィンガープリントが一致しない。最後のチェックの後にコンテンツが変わったことを表す</li><li>例がproviderのチェックのルールに違反している</li><li>スキルどうしが循環して準拠している (<code>alpha -&gt; beta -&gt; alpha</code>など)</li></ul>
-<p>循環しない限り、準拠の連鎖はどれだけ深くてもよい。フィンガープリントが一致しない時、そのコンテンツはまだ受け入れられていないので、<code>musubi check</code>はそのproviderのチェックを適用しない。<code>musubi check --update</code>は変わったコンテンツにチェックを適用し、全ての例が通った時だけフィンガープリントを書き換える。</p>
+<ul><li><code>musubi.json</code>がJSONとして正しくない、定義にないフィールドを持つ、知らない定義のバージョンを指定している</li><li>バージョンが<code>MAJOR.MINOR.PATCH</code>の形でない、範囲が3つの形のどれでもない</li><li>ファイル、チェック、例のパスがスキルのフォルダの外へ出るか、存在しないファイルを指している</li><li>チェックがJSONのルールのファイルでない</li><li>consumerが、インストールされていないスキル (任意の準拠を除く) か、そのスキルが提供していないコンテンツに準拠している</li><li>providerのバージョンがconsumerの範囲の外にある</li><li>フィンガープリントが一致しない。最後のチェックの後にコンテンツが変わったことを表す</li><li>例がproviderのチェックのルールに違反している</li><li>スキルどうしが循環して準拠している (<code>alpha -&gt; beta -&gt; alpha</code>など)</li></ul>
+<p>任意の準拠のスキルがインストールされていない時、<code>musubi check</code>は警告を出してその準拠を飛ばす。インストールされている時は、ほかの準拠と同じようにチェックする。循環しない限り、準拠の連鎖はどれだけ深くてもよい。フィンガープリントが一致しない時、そのコンテンツはまだ受け入れられていないので、<code>musubi check</code>はそのproviderのチェックを適用しない。<code>musubi check --update</code>は変わったコンテンツにチェックを適用し、全ての例が通った時だけフィンガープリントを書き換える。</p>
 <p>1つでも通らなかった時は、フィンガープリントを元のまま残す。<code>--update</code>を付けない<code>musubi check</code>は、ファイルを書き込まない。</p>
 <div class="table"><table><thead><tr><th>終了コード</th><th>意味</th></tr></thead><tbody><tr><td><code>0</code></td><td>全ての宣言と例が通った。警告を出力することがある</td></tr><tr><td><code>1</code></td><td>1つ以上の問題があり、<code>&lt;ファイル&gt;:&lt;行&gt;: &lt;メッセージ&gt;</code>の形で出力した</td></tr><tr><td><code>2</code></td><td>コマンドの呼び出し方が間違っている</td></tr></tbody></table></div>
 <h2 id="s7">チェックのルール</h2>
@@ -146,13 +150,13 @@ integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
 <div class="table"><table><thead><tr><th>仕組み</th><th>すること</th><th>musubiとの関係</th></tr></thead><tbody><tr><td>スキルのインストーラー (APM、npx skills、skillpmなど)</td><td>スキルとその依存をインストールし、バージョンを固定する</td><td>スキルの入手先はインストーラーが管理する。<code>musubi.json</code>はスキルとコンテンツとバージョンだけを書くので、入手先を書くのは1か所で済む</td></tr><tr><td>Claude Codeのプラグインの<code>dependencies</code></td><td>プラグインが依存するプラグインをインストールする</td><td>インストーラーと同じ。このようなフィールドを持たないエージェントでは、consumerの本文にある作業を止める1行に頼る</td></tr><tr><td>Agent Skills</td><td><code>SKILL.md</code>とスキルのフォルダを定める</td><td><code>SKILL.md</code>は変えず、フォルダの中に<code>musubi.json</code>が1つ増えるだけである。musubiは実際のスキルで動くようになった後に、Agent Skillsへ提案する</td></tr><tr><td>Agent Skillsの依存ファイルとロックファイルの提案</td><td>スキルが必要とするスキルを宣言する</td><td>これらはどのスキルをインストールするかを書く。musubiは、そのスキルのどのコンテンツにどのバージョンで準拠するかを書き、再チェックする</td></tr></tbody></table></div>
 <h2 id="s9">musubiコマンド</h2>
 <p>コマンドはNode.js 22.18以降で動き、実行時の依存を持たない。</p>
-<div class="table"><table><thead><tr><th>コマンド</th><th>すること</th></tr></thead><tbody><tr><td><code>musubi check [&lt;フォルダ&gt;...] [--update]</code></td><td>フォルダの中の全ての<code>musubi.json</code>を、再チェックの節のとおりにチェックする</td></tr><tr><td><code>musubi add &lt;スキル名&gt;/&lt;名前&gt; [&lt;フォルダ&gt;...]</code></td><td>consumerのフォルダで実行する。<code>musubi.json</code>に範囲<code>^&lt;今のバージョン&gt;</code>とフィンガープリントを書き込み、既にあるフィールドは残し、<code>SKILL.md</code>に置く3行を出力する</td></tr><tr><td><code>musubi graph [&lt;フォルダ&gt;...] [--out &lt;ファイル&gt;]</code></td><td>各スキルと、準拠するコンテンツへの矢印を描いたHTMLのページを1つ書き出す</td></tr></tbody></table></div>
+<div class="table"><table><thead><tr><th>コマンド</th><th>すること</th></tr></thead><tbody><tr><td><code>musubi check [&lt;フォルダ&gt;...] [--update]</code></td><td>フォルダの中の全ての<code>musubi.json</code>を、再チェックの節のとおりにチェックする</td></tr><tr><td><code>musubi add &lt;スキル名&gt;/&lt;名前&gt; [&lt;フォルダ&gt;...] [--optional]</code></td><td>consumerのフォルダで実行する。<code>musubi.json</code>に範囲<code>^&lt;今のバージョン&gt;</code>とフィンガープリントを書き込み、既にあるフィールドは残し、<code>SKILL.md</code>に置く3行を出力する。<code>--optional</code>を付けると<code>optional: true</code>も書き、<code>musubi</code>が<code>optional</code>を持たない定義のバージョンなら最新の定義のバージョンに上げ、任意の準拠の3行を出力する</td></tr><tr><td><code>musubi graph [&lt;フォルダ&gt;...] [--out &lt;ファイル&gt;]</code></td><td>各スキルと、準拠するコンテンツへの矢印を描いたHTMLのページを1つ書き出す</td></tr></tbody></table></div>
 </article>
 </div></div>
 </main>
 <footer class="footer"><div class="wrap">
 <a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MITライセンス</a>
-<div class="versions"><span>定義のバージョン 2026-11-19</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.1.0</a></div>
+<div class="versions"><span>定義のバージョン 2026-11-20</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.1.0</a></div>
 </div></footer>
 <script>
 document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
