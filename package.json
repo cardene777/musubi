@@ -1,6 +1,6 @@
 {
   "name": "musubi-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Binds the content one agent skill provides to the skills that follow it, and checks them again when that content changes",
   "keywords": [
     "agent-skills",

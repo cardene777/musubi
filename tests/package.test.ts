@@ -92,7 +92,7 @@ function pack() {
 test("package-is-musubi-cli", () => {
   const { pkg, url } = manifest();
   assert.equal(pkg.name, "musubi-cli");
-  assert.equal(pkg.version, "0.1.0");
+  assert.equal(pkg.version, "0.2.0");
   assert.equal(pkg.private, undefined, "npm publish refuses a package marked private");
   assert.match(url, /^git\+https:\/\/github\.com\/[^/]+\/musubi\.git$/, "repository does not point at github.com/<owner>/musubi");
 });
