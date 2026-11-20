@@ -33,8 +33,9 @@ Verify the domain before pointing the repository at it, so no other account can 
 
 The `CNAME` record stays DNS only, because GitHub Pages issues the HTTPS certificate only when requests reach it directly.
 
-After the first `pnpm site:publish`, point the repository's Pages at the branch and the domain.
-Run these in this repository; `gh` fills in the owner and the name:
+The first `pnpm site:publish` creates `gh-pages`, and GitHub turns Pages on for that branch by itself.
+After it, set the custom domain by running this in this repository; `gh` fills in the owner and the name.
+The first line is needed only when Pages is still off, and answers `GitHub Pages is already enabled` otherwise:
 
 ```bash
 gh api --method POST "repos/{owner}/{repo}/pages" -f "source[branch]=gh-pages" -f "source[path]=/"
