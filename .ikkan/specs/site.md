@@ -40,7 +40,7 @@
 | 公開は、`main`以外の枝の上と、commitしていない変更が在る時を拒み、`gh-pages`へ何も送らない | `pnpm test`の検査`publish-refuses-unmerged-or-uncommitted-work`が通る | #13 |
 | 組み立てが落ちた時、公開は`gh-pages`へ何も送らず、終わり方0以外で終わる | `pnpm test`の検査`publish-refuses-when-the-build-fails`が通る | #13 |
 | `docs/publishing.md`と`docs/publishing.ja.md`は、本人が画面で行うDNSのCNAMEと確認のTXTとGitHub Pagesの独自ドメインの設定と、公開の命令`pnpm site:publish`を示し、READMEがその文書へリンクする | `pnpm test`の検査`publishing-doc-shows-the-manual-steps`が通る | #13 |
-| 追跡するfileのうち、アカウントの名前を持つのは`LICENSE`と`package.json`と`registry/`と`design/`の下だけである | `pnpm test`の検査`account-name-only-in-license-and-package`が通る | #13 |
+| 追跡するfileのうち、アカウントの名前を持つのは`LICENSE`と`package.json`と`registry/`と`design/`の下だけである | `pnpm test`の検査`account-name-only-in-license-and-package`が通る | #13 #20 |
 | npmに出す包みは、`site/`の下のfileを持たない | `pnpm test`の検査`packed-files-leave-out-the-site`が通る | #13 |
 | 図の箱の中の名前と説明は、箱の左右の中央に置かれる | `pnpm test`の検査`graph-centers-the-text-in-each-box`が通る | #19 |
 | 箱から1本だけ出て曲がらずに届く線では、線の上の文字が線の左右の中央に置かれる | `pnpm test`の検査`graph-centers-a-label-over-a-straight-line`が通る | #19 |
@@ -56,3 +56,21 @@
 | 印の無い`/assets/site.css`を読むページを、ビルドは書き出さない | `pnpm test`の検査`site-pages-link-the-stylesheet-by-content`が通る | #22 |
 | 全てのページは、サイトの1つのスタイルのファイルだけを読み、ヘッダーとフッターを1つずつ持つ | `pnpm test`の検査`site-pages-share-one-stylesheet`が通る | #22 |
 | `pnpm site:publish`は、ビルドしたページを`gh-pages`に1つのコミットで足す | `pnpm test`の検査`publish-commits-the-site-to-gh-pages`が通る | #22 |
+| ビルドは`gh`でトピック`musubi-skills`を持つ公開リポジトリを検索し、そのファイルの一覧で`musubi.json`と`SKILL.md`が並ぶフォルダを、一覧とスキルのページに載せる | `pnpm test`の検査`site-lists-skills-found-by-the-topic`が通る | #20 |
+| 検索の結果に非公開のリポジトリが混ざった時、そのリポジトリのスキルを載せない | `pnpm test`の検査`site-leaves-out-private-repositories`が通る | #20 |
+| 見つけた`musubi.json`の隣に`SKILL.md`が無い時、そのフォルダを載せず、ビルドの出力にリポジトリとフォルダと理由を出す | `pnpm test`の検査`site-names-found-folders-without-skill-md`が通る | #20 |
+| `musubi check`の決まりに合わない`musubi.json`を持つスキルは、`registry/`に載ったスキルでも見つけたスキルでも載せず、ビルドの出力にフォルダと行と理由を出す | `pnpm test`の検査`site-leaves-out-declarations-check-refuses`が通る | #20 |
+| `registry/excluded.json`が名指したリポジトリかフォルダのスキルは、見つけても`registry/`に載っていても載せない | `pnpm test`の検査`site-leaves-out-excluded-skills`が通る | #20 |
+| `registry/`と検索の両方が同じリポジトリを名指した時、そのリポジトリのスキルをどれも1件ずつ載せる | `pnpm test`の検査`site-lists-a-skill-found-twice-once`が通る | #20 |
+| リポジトリの直下に`musubi.json`と`SKILL.md`が並ぶ時、そのスキルをリポジトリの名前で載せる | `pnpm test`の検査`site-names-a-root-skill-after-its-repository`が通る | #20 |
+| `gh`で検索できない時、ビルドはページを書き出さずに終わり方1で止まり、`gh auth login`を案内する | `pnpm test`の検査`site-stops-when-github-cannot-be-searched`が通る | #20 |
+| 英語と日本語のスキルの一覧とスキルのページは、運営が内容と安全性を確かめていないと伝える | `pnpm test`の検査`site-pages-say-the-skills-are-not-reviewed`が通る | #20 |
+| 英語と日本語のトップページの「スキルを載せる」と、`README.md`と`README.ja.md`は、公開リポジトリにトピック`musubi-skills`を付ければ次の公開で載ると案内する | `pnpm test`の検査`site-tells-authors-to-add-the-topic`が通る | #20 |
+| `docs/publishing.md`と`docs/publishing.ja.md`は、公開の前に`gh auth login`でログインしておく手順を示す | `pnpm test`の検査`publishing-doc-says-to-sign-in-to-gh`が通る | #20 |
+| `registry/`に載ったスキルは、リポジトリにトピックが無くても一覧に載る | `pnpm test`の検査`site-lists-registered-skills`が通る | #20 |
+| `registry/`にも検索の結果にも無いスキルは一覧に載らない | `pnpm test`の検査`site-leaves-out-unregistered-skills`が通る | #20 |
+| `musubi.json`を読めない登録は、ビルドの出力に登録のfileとフォルダを名指して外し、残りのページを書き出して終わり方0で終わる | `pnpm test`の検査`site-names-unreadable-entries`が通る | #20 |
+| ビルドが落ちた時、公開の命令は`gh-pages`へ送らない | `pnpm test`の検査`publish-refuses-when-the-build-fails`が通る | #20 |
+| `README.md`と`README.ja.md`は、サイトを組み立てる命令と、本人のスキルを並べる`registry/<owner>/<repo>.json`を示す | `pnpm test`の検査`readme-shows-how-to-register`が通る | #20 |
+| `registry/`の下のfileは、`registry/<持ち主>/<repo>.json`と`registry/excluded.json`だけで、どちらも決まった形を持つ | `pnpm test`の検査`registry-entries-are-well-formed`が通る | #20 |
+| 英語の文書と日本語の対の文書は、同じ見出しと表とコードの塊を持つ | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #20 |
