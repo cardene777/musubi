@@ -1,21 +1,22 @@
 # musubi
 
-musubiは、あるエージェントのスキルの中身を、別のスキルと結ぶための提案です。
+musubiは、あるエージェントのスキルのコンテンツを、別のスキルと結び付けるための提案です。
 
-スキルを入れる道具は既にあり、依存するスキルも一緒に入れて版を固定できます。
-ただし、使う側のスキルが依存先のどの中身に従うのかは、どの道具にも残りません。
-中身とは、書く文書の書式、守る書き方の決まり、回す検査のことです。
-musubiでは、スキルが出す中身を名前と版で宣言し、別のスキルがその中身に従うと宣言します。
-スキルを使う時には、エージェントがその中身を読み込みます。
+エージェントのスキルのパッケージマネージャーは既にあり、スキルを依存するスキルと一緒にインストールして、バージョンを固定できます。
+ただし、スキルが依存先のどの部分に準拠するのかは記録しません。
+その部分とは、書く文書の書式や、守る書き方のルールや、実行するチェックのことです。
+musubiでは、スキルが提供するコンテンツを名前とバージョン付きで宣言し、別のスキルがそのコンテンツに準拠すると宣言します。
+
+スキルを実行する時は、エージェントがそのコンテンツを読み込みます。
 この動きは、`SKILL.md`を読むどのエージェントでも同じです。
-出す側の中身が変わると、従う側のスキルを確かめ直します。
+提供するコンテンツが変わると、準拠するスキルが再チェックされます。
 
-定義は[spec/musubi.ja.md](spec/musubi.ja.md)に在ります。
+定義は[spec/musubi.ja.md](spec/musubi.ja.md)にあります。
 
-## スキルの加わり方
+## スキルが参加する方法
 
-スキルは`SKILL.md`をそのまま持ち、その横に`musubi.json`を足します。
-出す側は、出す中身を並べます。
+スキルは`SKILL.md`をそのまま持ち、その隣に`musubi.json`を追加します。
+providerは、提供するコンテンツを並べます。
 
 ```json
 {
@@ -26,7 +27,7 @@ musubiでは、スキルが出す中身を名前と版で宣言し、別のス�
 }
 ```
 
-使う側は、従う中身と、従える版と、最後に確かめた中身の指紋を並べます。
+consumerは、準拠するコンテンツと、受け入れるバージョンと、最後にチェックしたコンテンツのフィンガープリントを並べます。
 
 ```json
 {
@@ -41,15 +42,15 @@ musubiでは、スキルが出す中身を名前と版で宣言し、別のス�
 }
 ```
 
-使う側の`SKILL.md`の本文は、`design-doc`のスキルを名前で開いて`design`の書式を読むようエージェントに伝えます。
-そのため、エージェントは新しい仕組みを持たずに中身を読み込めます。
-2つのスキルは[examples/skills](examples/skills)に在ります。
+consumerの`SKILL.md`の本文は、`design-doc`のスキルを名前で開いて`design`の書式を読むよう、エージェントに伝えます。
+そのため、エージェントは新しい仕組みがなくてもコンテンツを読み込めます。
+2つのスキルは[examples/skills](examples/skills)にあります。
 
-## 確かめ方
+## チェック
 
-`musubi`の命令は宣言を確かめ、出す側の検査を使う側の例に回します。
+`musubi`コマンドは宣言をチェックし、providerのチェックをconsumerの例に適用します。
 Node.js 22.18以降で動き、実行時の依存を持ちません。
-npmには`musubi-cli`の名前で出ており、入れた後はプロジェクトのフォルダで回します。
+npmに`musubi-cli`として公開しており、インストールした後はプロジェクトのフォルダで実行します。
 
 ```bash
 npm install -g musubi-cli
@@ -57,10 +58,10 @@ musubi check
 musubi graph --out graph.html
 ```
 
-フォルダを渡さない時、`musubi check`は今のフォルダとホームのフォルダの`.claude/skills`、`.agents/skills`、`.github/skills`、`.gemini/skills`を読みます。
-入れずに1回だけ回す時は、`npx musubi-cli check <スキルのフォルダ>`を使います。
+フォルダを指定しない時、`musubi check`はカレントフォルダとホームフォルダにある`.claude/skills`、`.agents/skills`、`.github/skills`、`.gemini/skills`を読みます。
+インストールせずに1回だけ実行する時は、`npx musubi-cli check <スキルのフォルダ>`を使います。
 
-このrepoを手元に写して回す時は、先に開発の依存を入れます。
+このリポジトリをクローンして実行する時は、先に開発用の依存をインストールします。
 
 ```bash
 pnpm install
@@ -70,8 +71,9 @@ node src/cli.ts graph examples/skills --out graph.html
 
 ## サイトにスキルを載せる
 
-musubiのサイトは、定義と、`registry/`に名前のあるスキルを見せます。スキルごとに、出す中身と従う中身と、そのスキルに従っているスキルが載ります。
-repoごとに1つの`registry/<owner>/<repo>.json`を置き、見せるスキルのフォルダをrepoの根からの相対のpathで並べます。
+musubiのサイトは、定義と、`registry/`に名前があるスキルを表示します。
+スキルごとに、提供するコンテンツと、準拠するコンテンツと、そのスキルに準拠しているスキルが載ります。
+リポジトリごとに`registry/<owner>/<repo>.json`というファイルを1つ置き、表示するスキルのフォルダを、リポジトリのルートからの相対パスで並べます。
 
 ```json
 {
@@ -79,21 +81,21 @@ repoごとに1つの`registry/<owner>/<repo>.json`を置き、見せるスキル
 }
 ```
 
-スキルを載せる時は、そのfileを足すか変えるPRを送ります。
-サイトは各フォルダの`musubi.json`と`SKILL.md`を、GitHubにあるrepoの既定のbranchから読むので、repoは公開している必要があります。
-`musubi.json`を読めないフォルダは、サイトを組み立てる時に名指して知らせ、一覧から外します。
+スキルを載せる時は、そのファイルを追加するか変更するPRを送ります。
+サイトは各フォルダの`musubi.json`と`SKILL.md`を、GitHubにあるリポジトリのデフォルトブランチから読むので、リポジトリは公開されている必要があります。
+`musubi.json`を読めないフォルダは、サイトをビルドする時にフォルダ名を表示し、一覧から外します。
 
-サイトを組み立てて手元の<http://localhost:3810/>で開く時は、`pnpm site`を打ちます。
-この命令は`node site/build.ts`で頁を`site/dist/`へ書き出してから、そのフォルダを配ります。
+サイトをビルドして手元の<http://localhost:3810/>で開く時は、`pnpm site`を実行します。
+このコマンドは`node site/build.ts`でページを`site/dist/`に書き出してから、そのフォルダを配信します。
 公開したサイトは<https://musubi.cardene.dev/>にあり、`pnpm site:publish`で公開する手順は[docs/publishing.ja.md](docs/publishing.ja.md)にあります。
 
 ## 文書
 
-| 文書 | 持つ物 |
+| 文書 | 内容 |
 |---|---|
 | [spec/musubi.ja.md](spec/musubi.ja.md) | 定義 |
-| [GLOSSARY.ja.md](GLOSSARY.ja.md) | 定義が使う語 |
+| [GLOSSARY.ja.md](GLOSSARY.ja.md) | 定義が使う用語 |
 | [docs/publishing.ja.md](docs/publishing.ja.md) | サイトをGitHub Pagesへ公開する手順 |
-| [docs/adr](docs/adr) | 戻すのが高くつく判断と、採らなかった案 |
+| [docs/adr](docs/adr) | 元に戻すのが高くつく判断と、採らなかった案 |
 
 English: [README.md](README.md)

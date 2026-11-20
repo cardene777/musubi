@@ -534,7 +534,7 @@ function homePage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], lines
 <section class="hero" data-home="hero">
 <div>
 <p class="eyebrow draw" style="--d:0">${escape(t.eyebrow)}</p>
-<h1 class="draw" style="--d:80">${escape(t.heroTitle).replace(/[^、]+、?/g, (part) => `<span class="phrase">${part}</span>`)}</h1>
+<h1 class="draw" style="--d:80">${escape(t.heroTitle)}</h1>
 <p class="lead draw" style="--d:200">${escape(t.heroLead)}</p>
 <div class="install draw" style="--d:300"><div class="tabs" role="tablist" aria-label="${escape(t.installLabel)}">${tabs}</div><div class="cmd"><span class="p">$</span><code class="t">${escape(COMMANDS[0].command)}</code><button class="copy" type="button" data-copy="${escape(COMMANDS[0].command)}" aria-label="${escape(t.copy)}">${icon("copy")}</button></div></div>
 <div class="actions draw" style="--d:380"><a class="button primary" href="${at(lang, "/spec/")}">${escape(t.readDefinition)}${icon("arrow")}</a><a class="button secondary" href="${at(lang, "/skills/")}">${escape(t.browseSkills)}</a></div>

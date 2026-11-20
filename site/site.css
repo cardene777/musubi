@@ -101,11 +101,8 @@ h1, h2, h3 { text-wrap: balance; }
 /* Home */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 72px; align-items: center; padding: 88px 0 120px; }
-.hero > div:first-child { container-type: inline-size; }
 .hero h1 { font-size: 56px; line-height: 1.05; letter-spacing: -1.6px; margin: 20px 0 24px; }
-/* Each part of the title up to a 、 stays on one line, sized so the longest part (11 characters) fits the column. */
-.hero h1 .phrase { display: inline-block; }
-:lang(ja) .hero h1 { font-size: min(52px, 8.6cqi); letter-spacing: -0.5px; line-height: 1.2; }
+:lang(ja) .hero h1 { letter-spacing: -0.5px; line-height: 1.2; }
 .hero .lead { color: var(--text-2); font-size: 18px; margin: 0 0 28px; max-width: 34em; }
 .install { width: 440px; max-width: 100%; margin-bottom: 24px; border-radius: 12px; background: var(--bg-inset); border: 1px solid var(--border); overflow: hidden; }
 .tabs { display: flex; gap: 20px; padding: 0 16px; border-bottom: 1px solid var(--border); }
