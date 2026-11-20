@@ -278,3 +278,51 @@ test("update-keeps-the-fingerprint-on-a-failure", () => {
   assert.notEqual(before, fingerprintOnDisk(join(set.dir, provider), providerFiles));
   assert.equal(DEF, JSON.parse(readFileSync(join(set.dir, consumer, "musubi.json"), "utf8")).musubi);
 });
+
+// The definition version that knows optional follows (issue #29).
+const NEXT = "2026-11-20";
+const optional = (json: Record<string, unknown>, value: unknown = true) => {
+  ((json.follows as Record<string, Record<string, unknown>>)["design-doc/design"]).optional = value;
+  return json;
+};
+
+test("check-skips-an-optional-follow-whose-provider-is-missing", () => {
+  const set = skills({ "api-design": { musubi: NEXT, follows: { "design-doc/design": { range: "^1.0.0" } }, json: (j) => optional(j) } });
+  const r = run(["check", "skills"], { cwd: set.dir });
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stderr, /warning: api-design follows design-doc\/design only when design-doc is installed/, r.stderr);
+});
+
+test("check-checks-an-optional-follow-whose-provider-is-installed", () => {
+  const provider = { provides: { design: { version: "1.0.0", file: "formats/design.md", text: formatText } } };
+  const good = skills({
+    "design-doc": provider,
+    "api-design": { musubi: NEXT, follows: { "design-doc/design": { range: "^1.0.0" } }, json: (j) => optional(j) },
+  });
+  const ok = run(["check", "skills"], { cwd: good.dir });
+  assert.equal(ok.code, 0, ok.stderr);
+  const changed = skills({
+    "design-doc": provider,
+    "api-design": {
+      musubi: NEXT,
+      follows: { "design-doc/design": { range: "^1.0.0", integrity: `sha256-${"B".repeat(43)}=` } },
+      json: (j) => optional(j),
+    },
+  });
+  const r = run(["check", "skills"], { cwd: changed.dir });
+  assert.equal(r.code, 1, r.stderr);
+  assert.match(r.stderr, /the fingerprint of design-doc\/design does not match/, r.stderr);
+});
+
+test("check-refuses-optional-it-cannot-read", () => {
+  const older = skills({ "api-design": { follows: { "design-doc/design": { range: "^1.0.0" } }, json: (j) => optional(j) } });
+  const r1 = run(["check", "skills"], { cwd: older.dir });
+  assert.equal(r1.code, 1, r1.stderr);
+  const line1 = lineOf(older.json["api-design"], '"optional"');
+  assert.ok(r1.stderr.includes(`api-design/musubi.json:${line1}: unknown field "optional" in "design-doc/design"`), r1.stderr);
+  const wrong = skills({ "api-design": { musubi: NEXT, follows: { "design-doc/design": { range: "^1.0.0" } }, json: (j) => optional(j, "yes") } });
+  const r2 = run(["check", "skills"], { cwd: wrong.dir });
+  assert.equal(r2.code, 1, r2.stderr);
+  const line2 = lineOf(wrong.json["api-design"], '"optional"');
+  assert.ok(r2.stderr.includes(`api-design/musubi.json:${line2}: "optional" of "design-doc/design" must be true or false`), r2.stderr);
+});

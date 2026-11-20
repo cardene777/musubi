@@ -84,6 +84,7 @@ h1, h2, h3 { text-wrap: balance; }
 .chip { display: inline-block; padding: 3px 8px; border-radius: 6px; font: 12px/1.5 "JetBrains Mono", monospace; white-space: nowrap; }
 .chip.provides { background: var(--accent-muted); color: var(--accent); }
 .chip.follows { background: var(--accent-2-muted); color: var(--accent-2); }
+.chip .optional { margin-left: 6px; padding: 0 5px; border: 1px solid currentColor; border-radius: 4px; font-size: 11px; }
 .muted { color: var(--text-muted); }
 .graph { background: var(--bg-inset); border: 1px solid var(--border); border-radius: 16px; padding: 24px; overflow-x: auto; display: flex; justify-content: center; }
 .graph svg { display: block; max-width: none; }

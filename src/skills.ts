@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import { definitionVersions } from "./definition.ts";
+import { definitionVersions, optionalVersions } from "./definition.ts";
 import { INTEGRITY } from "./fingerprint.ts";
 import { isObject, JsonError, parseLocated, pointer } from "./json.ts";
 import type { Report } from "./report.ts";
@@ -55,6 +55,7 @@ export type Follow = {
   range: Range | null;
   integrity: string | null;
   examples: string[];
+  optional: boolean;
   line: number;
   versionLine: number;
   integrityLine: number;
@@ -155,7 +156,13 @@ export function readDeclaration(skill: Skill, report: Report): Declaration | nul
           report.problem(path, line, `"${ref}" must be an object with "version" and "integrity"`);
           continue;
         }
-        for (const key of Object.keys(entry)) if (!FOLLOWED.has(key)) report.problem(path, at("follows", ref, key), `unknown field "${key}" in "${ref}"`);
+        const knowsOptional = typeof value.musubi === "string" && optionalVersions.has(value.musubi);
+        for (const key of Object.keys(entry)) {
+          if (!FOLLOWED.has(key) && !(key === "optional" && knowsOptional)) report.problem(path, at("follows", ref, key), `unknown field "${key}" in "${ref}"`);
+        }
+        if (knowsOptional && entry.optional !== undefined && typeof entry.optional !== "boolean") {
+          report.problem(path, at("follows", ref, "optional"), `"optional" of "${ref}" must be true or false`);
+        }
         const versionLine = lines.get(pointer("follows", ref, "version")) ?? line;
         const range = typeof entry.version === "string" ? parseRange(entry.version) : null;
         if (!range) report.problem(path, versionLine, `the version range of "${ref}" must be ^X.Y.Z, ~X.Y.Z, or X.Y.Z`);
@@ -176,7 +183,8 @@ export function readDeclaration(skill: Skill, report: Report): Declaration | nul
           }
         }
         const [skillName, content] = ref.split("/");
-        declaration.follows.push({ ref, skill: skillName, content, range, integrity, examples, line, versionLine, integrityLine });
+        const optional = knowsOptional && entry.optional === true;
+        declaration.follows.push({ ref, skill: skillName, content, range, integrity, examples, optional, line, versionLine, integrityLine });
       }
     }
   }
