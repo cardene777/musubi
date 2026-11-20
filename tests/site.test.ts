@@ -547,12 +547,14 @@ test("registry-lists-the-first-skills", () => {
   assert.ok(owner, "registry/ has no agent-shuriken entry");
   const { skills } = JSON.parse(readFileSync(join(registry, owner, "agent-shuriken.json"), "utf8"));
   assert.deepEqual([...skills].sort(), [
+    "plugins/convey/skills/convey",
     "plugins/doc-formats/skills/design-doc",
     "plugins/evm-dev/skills/contract-design",
     "plugins/evm-dev/skills/dapp-architecture",
     "plugins/evm-dev/skills/financial-standards",
     "plugins/evm-dev/skills/multichain-design",
     "plugins/evm-dev/skills/wallet-design",
+    "plugins/japanese-writing/skills/japanese-writing",
   ]);
 });
 
