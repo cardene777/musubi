@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -315,9 +316,21 @@ test("site-pages-share-one-stylesheet", () => {
     const html = readFileSync(file, "utf8");
     const name = relative(out, file);
     const sheets = tags(html, "link", /\srel="stylesheet"/).map((tag) => href(tag, "href")).filter((h) => h.startsWith("/"));
-    assert.deepEqual(sheets, ["/assets/site.css"], `${name} reads other stylesheets`);
+    assert.deepEqual(sheets.map((h) => h.split("?")[0]), ["/assets/site.css"], `${name} reads other stylesheets`);
     assert.equal([...html.matchAll(/<header class="header">/g)].length, 1, `${name} has no single header`);
     assert.equal([...html.matchAll(/<footer class="footer">/g)].length, 1, `${name} has no single footer`);
+  }
+});
+
+test("site-pages-link-the-stylesheet-by-content", () => {
+  const { out } = built();
+  const css = readFileSync(join(out, "assets", "site.css"));
+  const mark = createHash("sha256").update(css).digest("hex").slice(0, 12);
+  for (const file of htmlFiles(out)) {
+    const html = readFileSync(file, "utf8");
+    const name = relative(out, file);
+    const sheets = tags(html, "link", /\srel="stylesheet"/).map((tag) => href(tag, "href")).filter((h) => h.startsWith("/"));
+    assert.deepEqual(sheets, [`/assets/site.css?v=${mark}`], `${name} does not read the stylesheet by the mark of its content`);
   }
 });
 

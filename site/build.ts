@@ -6,6 +6,7 @@
 // writes the English pages at / and the Japanese pages at /ja/, with sitemap.xml, robots.txt, and llms.txt,
 // and the CNAME and .nojekyll files GitHub Pages reads (site/publish.ts sends the folder there).
 // A listed folder whose musubi.json cannot be read is named on stderr and left out of the site.
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import {
   appendFileSync,
@@ -255,6 +256,10 @@ const logo = readFileSync(join(root, "site", "assets", "icon.svg"), "utf8")
   .replace('fill="#22D3EE" stroke="none"', 'class="knot"');
 if (!/class="provider"[\s\S]*class="follower"[\s\S]*class="knot"/.test(logo)) throw new Error("site/assets/icon.svg no longer has the colors the header logo replaces");
 
+// Pages read the stylesheet with a mark taken from its content. Its file name never changes, so
+// without the mark a browser keeps the old copy for as long as the server lets it after a publish.
+const stylesheetMark = createHash("sha256").update(readFileSync(join(root, "site", "site.css"))).digest("hex").slice(0, 12);
+
 const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
 
 type Page = {
@@ -303,7 +308,7 @@ function layout(o: Options, page: Page): string {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/site.css?v=${stylesheetMark}">
 <script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
 <script type="application/ld+json">${json({ "@context": "https://schema.org", ...page.ld })}</script>
 </head>
