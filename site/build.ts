@@ -43,6 +43,8 @@ const TOPIC = "musubi-skills";
 const SEARCH_PAGES = 10;
 
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+// Links that leave the site open in a new tab, so the site stays open behind them.
+const OUT = 'target="_blank" rel="noopener"';
 const repoUrl = String(pkg.repository?.url ?? "").replace(/^git\+/, "").replace(/\.git$/, "");
 
 type Options = { registry: string; source: string | null; out: string; base: string };
@@ -477,7 +479,7 @@ function layout(o: Options, page: Page): string {
 <header class="header"><div class="wrap">
 <div class="left">
 <a class="brand" href="${at(page.lang, "/")}">${logo}musubi</a>
-<nav class="nav">${navLink("definition", "navDefinition", "/spec/")}${navLink("skills", "navSkills", "/skills/")}<a href="${repoUrl}">GitHub</a></nav>
+<nav class="nav">${navLink("definition", "navDefinition", "/spec/")}${navLink("skills", "navSkills", "/skills/")}<a ${OUT} href="${repoUrl}">GitHub</a></nav>
 </div>
 <div class="right">
 <div class="lang">${LANGS.map(langPart).join("")}</div>
@@ -488,8 +490,8 @@ function layout(o: Options, page: Page): string {
 ${page.body}
 </main>
 <footer class="footer"><div class="wrap">
-<a class="muted" href="${repoUrl}/blob/HEAD/LICENSE">${escape(t.license)}</a>
-<div class="versions"><span>${escape(fill(t.definitionFooter, { date: latestDefinition }))}</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli ${escape(pkg.version)}</a></div>
+<a class="muted" ${OUT} href="${repoUrl}/blob/HEAD/LICENSE">${escape(t.license)}</a>
+<div class="versions"><span>${escape(fill(t.definitionFooter, { date: latestDefinition }))}</span><a class="muted" ${OUT} href="https://www.npmjs.com/package/musubi-cli">musubi-cli ${escape(pkg.version)}</a></div>
 </div></footer>
 <script>
 document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
@@ -734,7 +736,7 @@ ${
 }
 <section class="next reveal" data-home="next">
 <a class="ncard" href="${at(lang, "/spec/")}">${icon("book", 22)}<h3>${escape(t.definitionCardTitle)}</h3><p>${escape(fill(t.definitionCardBody, { date: latestDefinition }))}</p><span class="go">${escape(t.readDefinition)}${icon("arrow")}</span></a>
-<a class="ncard" href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull", 22)}<h3>${escape(t.listYours)}</h3><p>${escape(t.listYoursBody)}</p><span class="go">${escape(t.howToRegister)}${icon("arrow")}</span></a>
+<a class="ncard" ${OUT} href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull", 22)}<h3>${escape(t.listYours)}</h3><p>${escape(t.listYoursBody)}</p><span class="go">${escape(t.howToRegister)}${icon("arrow")}</span></a>
 </section>
 </div>
 ${HOME_SCRIPT}`;
@@ -825,7 +827,7 @@ function listPage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], page:
     })
     .join("\n");
   const body = `<div class="wrap">
-<div class="page-title"><div><h1>${escape(t.skillsTitle)}</h1><p>${escape(fill(t.skillsSubtitle, { skills: skills.length, repos }))}</p></div><a class="button secondary" href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull")}${escape(t.howToRegister)}</a></div>
+<div class="page-title"><div><h1>${escape(t.skillsTitle)}</h1><p>${escape(fill(t.skillsSubtitle, { skills: skills.length, repos }))}</p></div><a class="button secondary" ${OUT} href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull")}${escape(t.howToRegister)}</a></div>
 ${pager(lang, page, pages)}
 <div class="table-scroll"><table class="skills">
 <thead><tr><th>${escape(t.colSkill)}</th><th>${escape(t.colProvides)}</th><th>${escape(t.colFollows)}</th><th>${escape(t.colFollowedBy)}</th></tr></thead>
@@ -901,7 +903,7 @@ ${graph(lang, nodes, [...outgoing, ...incoming], skill)}
 <p class="hint">${icon("pointer", 15)}${escape(t.graphHint)}</p>
 </div>
 <aside class="panel">
-<section data-section="source"><h2>${escape(t.source)}</h2><a class="source" href="https://github.com/${skill.owner}/${skill.repo}">${icon("github", 15)}${escape(`${skill.owner}/${skill.repo}`)}</a><a class="source" href="${sourceUrl}">${icon("folder", 15)}${escape(skill.folder || ".")}</a></section>
+<section data-section="source"><h2>${escape(t.source)}</h2><a class="source" ${OUT} href="https://github.com/${skill.owner}/${skill.repo}">${icon("github", 15)}${escape(`${skill.owner}/${skill.repo}`)}</a><a class="source" ${OUT} href="${sourceUrl}">${icon("folder", 15)}${escape(skill.folder || ".")}</a></section>
 <section data-section="provides"><h2>${escape(t.provides)}<span>${skill.provides.length}</span></h2>${provides}</section>
 <section data-section="followed-by"><h2>${escape(t.followedBy)}<span>${incoming.length}</span></h2>${followedBy}</section>
 <section data-section="follows"><h2>${escape(t.follows)}<span>${skill.follows.length}</span></h2>${follows}</section>
