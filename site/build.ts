@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Builds the musubi site into one folder of static pages:
 //   node site/build.ts [--registry <folder>] [--source <folder>] [--out <folder>] [--base-url <url>]
-// It reads the definition from spec/ and the registry from registry/<owner>/<repo>.json, takes each
-// listed skill's musubi.json and SKILL.md from GitHub (or from --source/<owner>/<repo>/<folder>), and
-// writes the English pages at / and the Japanese pages at /ja/, with sitemap.xml, robots.txt, and llms.txt,
-// and the CNAME and .nojekyll files GitHub Pages reads (site/publish.ts sends the folder there).
-// A listed folder whose musubi.json cannot be read is named on stderr and left out of the site.
+// It reads the definition from spec/, the owner's skills from registry/<owner>/<repo>.json, and, with the
+// owner's gh sign-in, every public repository on GitHub that carries the topic musubi-skills. Each folder
+// with both musubi.json and SKILL.md is a skill, read from GitHub (or from --source/<owner>/<repo>/<folder>)
+// and checked by the rules musubi check uses. It writes the English pages at / and the Japanese pages at
+// /ja/, with sitemap.xml, robots.txt, and llms.txt, and the CNAME and .nojekyll files GitHub Pages reads
+// (site/publish.ts sends the folder there). A folder that fails a check, or that registry/excluded.json
+// names, is named on stderr and left out. When GitHub cannot be searched, the build stops and writes nothing.
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import {
@@ -22,9 +24,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, join, posix, resolve } from "node:path";
+import { dirname, join, posix, relative, resolve, sep } from "node:path";
 import { latestDefinition } from "../src/definition.ts";
 import { type GraphEdge, type GraphNode, graphSvg } from "../src/graph.ts";
+import { Report } from "../src/report.ts";
+import { readDeclaration } from "../src/skills.ts";
 import { escape, render } from "./markdown.ts";
 import { fill, type Key, type Lang, TEXT } from "./text.ts";
 
@@ -33,6 +37,10 @@ const DEFAULT_BASE = "https://musubi.cardene.dev";
 const PER_PAGE = 50;
 const LANGS: Lang[] = ["en", "ja"];
 const MARKER = ".musubi-site";
+// Authors list a skill by giving its public repository this topic on GitHub.
+const TOPIC = "musubi-skills";
+// The repository search returns 100 repositories a page and at most 1,000 in all.
+const SEARCH_PAGES = 10;
 
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const repoUrl = String(pkg.repository?.url ?? "").replace(/^git\+/, "").replace(/\.git$/, "");
@@ -52,6 +60,13 @@ type Skill = {
   text: string;
 };
 type Entry = { owner: string; repo: string; file: string; skills: string[] };
+// One folder to read as a skill, with where it came from: a registry file, or <owner>/<repo> when the
+// topic search found it. The folder is "" for a skill at the root of its repository.
+type Candidate = { owner: string; repo: string; folder: string; where: string };
+type Found = { owner: string; repo: string; branch: string };
+
+// Stops the build with this message and exit code 1, before any page is written.
+class Stop extends Error {}
 // One arrow: every content `from` follows in `to` (or in a skill not on the site, named `missing`).
 type Link = { from: Skill; to: Skill | null; missing: string; follows: Followed[] };
 
@@ -123,18 +138,170 @@ function readRegistry(dir: string, warn: (message: string) => void): Entry[] {
   return entries;
 }
 
-async function readFile(o: Options, entry: Entry, folder: string, file: string): Promise<string | null> {
-  if (o.source) {
-    const path = join(o.source, entry.owner, entry.repo, folder, file);
-    return existsSync(path) ? readFileSync(path, "utf8") : null;
-  }
-  const path = [...folder.split("/"), file].map(encodeURIComponent).join("/");
+const NAME = /^[A-Za-z0-9_.-]+$/;
+const safeName = (name: string) => NAME.test(name) && name !== "." && name !== "..";
+
+// Runs gh and returns what it prints, or throws a Stop with the first line gh wrote to stderr.
+function gh(args: string[]): string {
+  const r = spawnSync("gh", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (r.error) throw new Stop(r.error.message);
+  if (r.status !== 0) throw new Stop(r.stderr.trim().split("\n")[0] || `gh exited with ${r.status}`);
+  return r.stdout;
+}
+
+const ghJson = (args: string[]): Record<string, unknown> => {
+  const text = gh(args);
   try {
-    const response = await fetch(`https://raw.githubusercontent.com/${entry.owner}/${entry.repo}/HEAD/${path}`);
+    const value = JSON.parse(text);
+    if (isObject(value)) return value;
+  } catch {}
+  throw new Stop(`gh ${args.slice(0, 3).join(" ")} did not return a JSON object`);
+};
+
+// The public repositories that carry the topic, found with the owner's gh sign-in.
+function searchTopic(warn: (message: string) => void): Found[] {
+  const found: Found[] = [];
+  let total = 0;
+  try {
+    for (let page = 1; page <= SEARCH_PAGES; page += 1) {
+      const body = ghJson(["api", "-X", "GET", "search/repositories", "-f", `q=topic:${TOPIC} is:public`, "-f", "per_page=100", "-f", `page=${page}`]);
+      total = typeof body.total_count === "number" ? body.total_count : 0;
+      const items = Array.isArray(body.items) ? body.items : [];
+      for (const item of items) {
+        if (!isObject(item) || item.private !== false || typeof item.full_name !== "string") continue;
+        const [owner, repo, ...rest] = item.full_name.split("/");
+        if (rest.length > 0 || !safeName(owner) || !safeName(repo)) continue;
+        found.push({ owner, repo, branch: str(item.default_branch) || "HEAD" });
+      }
+      if (items.length < 100 || page * 100 >= total) break;
+    }
+  } catch (error) {
+    if (!(error instanceof Stop)) throw error;
+    throw new Stop(`could not search GitHub for public repositories with the topic ${TOPIC} (${error.message}). Sign in with gh auth login, then build again`);
+  }
+  if (total > SEARCH_PAGES * 100) warn(`GitHub has ${total} repositories with the topic ${TOPIC}; the search returns the first ${SEARCH_PAGES * 100}`);
+  return found;
+}
+
+// Every file path on the repository's default branch, or under --source/<owner>/<repo> when given.
+function listRepo(o: Options, repo: Found, warn: (message: string) => void): string[] {
+  if (o.source) {
+    const base = join(o.source, repo.owner, repo.repo);
+    const files: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir).sort()) {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) walk(path);
+        else files.push(relative(base, path).split(sep).join("/"));
+      }
+    };
+    if (existsSync(base)) walk(base);
+    return files;
+  }
+  const body = ghJson(["api", `repos/${repo.owner}/${repo.repo}/git/trees/${encodeURIComponent(repo.branch)}?recursive=1`]);
+  if (body.truncated === true) warn(`${repo.owner}/${repo.repo}: GitHub cut the file list short; folders past it are not read`);
+  const tree = Array.isArray(body.tree) ? body.tree : [];
+  return tree.flatMap((e) => (isObject(e) && e.type === "blob" && typeof e.path === "string" ? [e.path] : []));
+}
+
+// The folders of a found repository that hold musubi.json, each with SKILL.md beside it.
+function foundFolders(o: Options, repo: Found, warn: (message: string) => void): Candidate[] {
+  const where = `${repo.owner}/${repo.repo}`;
+  let files: string[];
+  try {
+    files = listRepo(o, repo, warn);
+  } catch (error) {
+    if (!(error instanceof Stop)) throw error;
+    warn(`${where}: could not read the file list (${error.message}); left out`);
+    return [];
+  }
+  const present = new Set(files);
+  const folders: Candidate[] = [];
+  for (const path of files) {
+    if (posix.basename(path) !== "musubi.json") continue;
+    const folder = posix.dirname(path) === "." ? "" : posix.dirname(path);
+    if (!present.has(folder ? `${folder}/SKILL.md` : "SKILL.md")) {
+      warn(`${where}: ${folder || "."}: musubi.json has no SKILL.md beside it; left out`);
+      continue;
+    }
+    folders.push({ owner: repo.owner, repo: repo.repo, folder, where });
+  }
+  return folders;
+}
+
+// registry/excluded.json names the repositories (<owner>/<repo>) and folders (<owner>/<repo>/<folder>)
+// the site leaves out, whether the registry lists them or the search finds them.
+function readExcluded(dir: string): Set<string> {
+  const path = join(dir, "excluded.json");
+  if (!existsSync(path)) return new Set();
+  let value: unknown;
+  try {
+    value = JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    throw new Stop(`registry/excluded.json is not valid JSON (${(error as Error).message})`);
+  }
+  if (!isObject(value) || !Array.isArray(value.excluded) || !value.excluded.every((s) => typeof s === "string")) {
+    throw new Stop('registry/excluded.json must list "excluded" as <owner>/<repo> or <owner>/<repo>/<folder> strings');
+  }
+  return new Set((value.excluded as string[]).map((s) => s.replace(/\/+$/, "")));
+}
+
+// A file of the skill from GitHub, by its path inside the skill folder.
+async function fetchFile(c: Candidate, path: string): Promise<string | null> {
+  const parts = [...c.folder.split("/"), ...path.split("/")].filter(Boolean).map(encodeURIComponent).join("/");
+  try {
+    const response = await fetch(`https://raw.githubusercontent.com/${c.owner}/${c.repo}/HEAD/${parts}`);
     return response.ok ? await response.text() : null;
   } catch {
     return null;
   }
+}
+
+// The paths musubi.json names: each content's file and check, and each follow's examples.
+function namedPaths(text: string): string[] {
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    return [];
+  }
+  if (!isObject(value)) return [];
+  const paths: unknown[] = [];
+  if (isObject(value.provides)) for (const p of Object.values(value.provides)) if (isObject(p)) paths.push(p.file, p.check);
+  if (isObject(value.follows)) {
+    for (const f of Object.values(value.follows)) if (isObject(f) && Array.isArray(f.examples)) paths.push(...f.examples);
+  }
+  return paths.filter((p): p is string => typeof p === "string" && p !== "");
+}
+
+// Reads the folder as musubi check does and returns the skill, or the reasons it is left out.
+async function loadSkill(o: Options, c: Candidate, scratch: () => string): Promise<Skill | string[]> {
+  const name = c.folder ? posix.basename(c.folder) : c.repo;
+  let dir: string;
+  if (o.source) dir = join(o.source, c.owner, c.repo, ...c.folder.split("/").filter(Boolean));
+  else {
+    // musubi check reads a skill from disk, so the files it reads are fetched into a scratch folder.
+    dir = mkdtempSync(join(scratch(), "skill-"));
+    for (const file of ["musubi.json", "SKILL.md"]) {
+      const text = await fetchFile(c, file);
+      if (text !== null) writeFileSync(join(dir, file), text);
+    }
+    const declared = existsSync(join(dir, "musubi.json")) ? readFileSync(join(dir, "musubi.json"), "utf8") : "";
+    for (const path of namedPaths(declared)) {
+      const target = resolve(dir, path);
+      if (!target.startsWith(dir + sep)) continue;
+      const text = await fetchFile(c, relative(dir, target).split(sep).join("/"));
+      if (text === null) continue;
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, text);
+    }
+  }
+  if (!existsSync(join(dir, "SKILL.md"))) return ["SKILL.md was not found"];
+  const report = new Report(dir);
+  const declaration = readDeclaration({ name, dir }, report);
+  if (!declaration) return ["musubi.json was not found"];
+  if (report.problems.length > 0) return report.problems.map((p) => `${relative(dir, p.file).split(sep).join("/")}:${p.line}: ${p.message}`);
+  return readSkill(c, name, declaration.text, readFileSync(join(dir, "SKILL.md"), "utf8"));
 }
 
 // The description in the SKILL.md frontmatter, on one line or folded over indented lines.
@@ -156,14 +323,9 @@ function description(skillMd: string): string {
   return value.replace(/^(["'])(.*)\1$/, "$2");
 }
 
-function readSkill(entry: Entry, folder: string, text: string, skillMd: string): Skill | string {
-  let value: unknown;
-  try {
-    value = JSON.parse(text);
-  } catch (error) {
-    return `musubi.json is not valid JSON (${(error as Error).message})`;
-  }
-  if (!isObject(value)) return "musubi.json does not hold one JSON object";
+// The skill as the site shows it, from a musubi.json that passed the checks.
+function readSkill(c: Candidate, name: string, text: string, skillMd: string): Skill {
+  const value = JSON.parse(text) as Record<string, unknown>;
   const provides = isObject(value.provides)
     ? Object.entries(value.provides)
         .filter(([, v]) => isObject(v))
@@ -180,12 +342,11 @@ function readSkill(entry: Entry, folder: string, text: string, skillMd: string):
           return { ref, skill, content, range: isObject(v) ? str(v.version) : "" };
         })
     : [];
-  const name = basename(folder);
   return {
-    id: `${entry.owner}/${entry.repo}/${name}`,
-    owner: entry.owner,
-    repo: entry.repo,
-    folder,
+    id: `${c.owner}/${c.repo}/${name}`,
+    owner: c.owner,
+    repo: c.repo,
+    folder: c.folder,
     name,
     description: description(skillMd),
     provides,
@@ -241,6 +402,7 @@ const ICONS: Record<string, string> = {
     '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   pull: '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/>',
   book: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   pointer:
     '<path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/>',
 };
@@ -397,9 +559,9 @@ function figure(lang: Lang, skills: Skill[], arrows: Link[]): Figure {
     };
   }
   // With no registered skill following another, the hero draws the two skills under examples/.
-  const entry: Entry = { owner: "examples", repo: "skills", file: "examples/skills", skills: [] };
-  const provider = readSkill(entry, "design-doc", exampleJson("design-doc"), "") as Skill;
-  const follower = readSkill(entry, "api-design", exampleJson("api-design"), "") as Skill;
+  const example = (folder: string): Candidate => ({ owner: "examples", repo: "skills", folder, where: "examples/skills" });
+  const provider = readSkill(example("design-doc"), "design-doc", exampleJson("design-doc"), "");
+  const follower = readSkill(example("api-design"), "api-design", exampleJson("api-design"), "");
   const [link] = links([provider, follower]);
   return {
     provider: { id: provider.id, name: provider.name, href: null, provides: provider.provides },
@@ -626,6 +788,9 @@ ${doc.html}
   };
 }
 
+// The skills are listed as found, so every page that shows them says nobody has reviewed them.
+const notice = (lang: Lang) => `<p class="notice" data-notice="unreviewed">${icon("info")}<span>${escape(TEXT[lang].unreviewed)}</span></p>`;
+
 function pager(lang: Lang, page: number, pages: number): string {
   const t = TEXT[lang];
   const item = (n: number) =>
@@ -660,6 +825,7 @@ function listPage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], page:
     .join("\n");
   const body = `<div class="wrap">
 <div class="page-title"><div><h1>${escape(t.skillsTitle)}</h1><p>${escape(fill(t.skillsSubtitle, { skills: skills.length, repos }))}</p></div><a class="button secondary" href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull")}${escape(t.howToRegister)}</a></div>
+${notice(lang)}
 ${pager(lang, page, pages)}
 <div class="table-scroll"><table class="skills">
 <thead><tr><th>${escape(t.colSkill)}</th><th>${escape(t.colProvides)}</th><th>${escape(t.colFollows)}</th><th>${escape(t.colFollowedBy)}</th></tr></thead>
@@ -731,11 +897,12 @@ function skillPage(o: Options, lang: Lang, skill: Skill, arrows: Link[]): Page {
 <div class="crumb"><a href="${at(lang, "/skills/")}">${escape(t.navSkills)}</a>${icon("right", 14)}<span>${escape(skill.name)}</span></div>
 <div class="title-row"><h1>${escape(skill.name)}</h1><span class="role ${role}">${escape(role === "provider" ? t.roleProvider : t.roleConsumer)}</span></div>
 ${skill.description ? `<p class="description">${escape(skill.description)}</p>` : ""}
+${notice(lang)}
 ${graph(lang, nodes, [...outgoing, ...incoming], skill)}
 <p class="hint">${icon("pointer", 15)}${escape(t.graphHint)}</p>
 </div>
 <aside class="panel">
-<section data-section="source"><h2>${escape(t.source)}</h2><a class="source" href="https://github.com/${skill.owner}/${skill.repo}">${icon("github", 15)}${escape(`${skill.owner}/${skill.repo}`)}</a><a class="source" href="${sourceUrl}">${icon("folder", 15)}${escape(skill.folder)}</a></section>
+<section data-section="source"><h2>${escape(t.source)}</h2><a class="source" href="https://github.com/${skill.owner}/${skill.repo}">${icon("github", 15)}${escape(`${skill.owner}/${skill.repo}`)}</a><a class="source" href="${sourceUrl}">${icon("folder", 15)}${escape(skill.folder || ".")}</a></section>
 <section data-section="provides"><h2>${escape(t.provides)}<span>${skill.provides.length}</span></h2>${provides}</section>
 <section data-section="followed-by"><h2>${escape(t.followedBy)}<span>${incoming.length}</span></h2>${followedBy}</section>
 <section data-section="follows"><h2>${escape(t.follows)}<span>${skill.follows.length}</span></h2>${follows}</section>
@@ -776,24 +943,49 @@ async function main() {
     warnings.push(message);
     process.stderr.write(`warning: ${message}\n`);
   };
-  if (existsSync(o.out) && readdirSync(o.out).length > 0) {
-    if (!existsSync(join(o.out, MARKER))) usage(`${o.out} holds files this command did not write; choose another --out`);
-    rmSync(o.out, { recursive: true, force: true });
+  const replace = existsSync(o.out) && readdirSync(o.out).length > 0;
+  if (replace && !existsSync(join(o.out, MARKER))) usage(`${o.out} holds files this command did not write; choose another --out`);
+
+  // The search runs before the old pages are removed, so a build that cannot search leaves them in place.
+  let excluded: Set<string>;
+  let found: Found[];
+  try {
+    excluded = readExcluded(o.registry);
+    found = searchTopic(warn);
+  } catch (error) {
+    if (!(error instanceof Stop)) throw error;
+    process.stderr.write(`musubi site: ${error.message}\n`);
+    process.exit(1);
+  }
+  if (replace) rmSync(o.out, { recursive: true, force: true });
+
+  // The owner's registry comes first, so a folder both name is read once, under its registry file.
+  const candidates: Candidate[] = [];
+  const seen = new Set<string>();
+  const registered = readRegistry(o.registry, warn).flatMap((entry) =>
+    entry.skills.map((folder) => ({ owner: entry.owner, repo: entry.repo, folder, where: entry.file })),
+  );
+  for (const c of [...registered, ...found.flatMap((repo) => foundFolders(o, repo, warn))]) {
+    const key = `${c.owner}/${c.repo}/${c.folder}`.replace(/\/$/, "");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (excluded.has(`${c.owner}/${c.repo}`) || excluded.has(key)) warn(`${c.where}: ${c.folder || "."}: named in registry/excluded.json; left out`);
+    else candidates.push(c);
   }
 
+  let scratchDir: string | null = null;
+  const scratch = () => (scratchDir ??= mkdtempSync(join(tmpdir(), "musubi-site-")));
   const skills: Skill[] = [];
-  for (const entry of readRegistry(o.registry, warn)) {
-    for (const folder of entry.skills) {
-      const [text, skillMd] = await Promise.all([readFile(o, entry, folder, "musubi.json"), readFile(o, entry, folder, "SKILL.md")]);
-      if (text === null) {
-        warn(`${entry.file}: ${folder}: musubi.json was not found; left out`);
-        continue;
-      }
-      const skill = readSkill(entry, folder, text, skillMd ?? "");
-      if (typeof skill === "string") warn(`${entry.file}: ${folder}: ${skill}; left out`);
-      else if (skills.some((s) => s.id === skill.id)) warn(`${entry.file}: ${folder}: another listed folder is also named ${skill.name}; left out`);
+  try {
+    const loaded = await Promise.all(candidates.map((c) => loadSkill(o, c, scratch)));
+    candidates.forEach((c, i) => {
+      const skill = loaded[i];
+      if (Array.isArray(skill)) for (const reason of skill) warn(`${c.where}: ${c.folder || "."}: ${reason}; left out`);
+      else if (skills.some((s) => s.id === skill.id)) warn(`${c.where}: ${c.folder || "."}: another listed folder is also named ${skill.name}; left out`);
       else skills.push(skill);
-    }
+    });
+  } finally {
+    if (scratchDir) rmSync(scratchDir, { recursive: true, force: true });
   }
   skills.sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
   const arrows = links(skills);

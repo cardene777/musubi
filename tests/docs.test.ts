@@ -150,6 +150,15 @@ test("publishing-doc-shows-the-manual-steps", () => {
   assert.equal(scripts["site:publish"], "node site/publish.ts", "package.json has no site:publish script that runs site/publish.ts");
 });
 
+test("publishing-doc-says-to-sign-in-to-gh", () => {
+  for (const doc of ["docs/publishing.md", "docs/publishing.ja.md"]) {
+    const text = readFileSync(join(root, doc), "utf8");
+    const block = [...text.matchAll(/```bash\n([\s\S]*?)```/g)].map((m) => m[1]).find((code) => code.includes("gh auth login"));
+    assert.ok(block, `${doc} has no command block that signs in with gh auth login`);
+    assert.ok(text.includes("musubi-skills"), `${doc} does not say the publish searches the topic musubi-skills`);
+  }
+});
+
 // The Japanese counterpart of every English document the shape test reads.
 const japaneseDocs = () => englishDocs().map((path) => path.replace(/\.md$/, ".ja.md")).filter((path) => existsSync(path));
 // Lines outside fenced blocks with inline code taken out, so code, keys, and commands are not read.

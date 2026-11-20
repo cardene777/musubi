@@ -71,9 +71,17 @@ node src/cli.ts graph examples/skills --out graph.html
 
 ## サイトにスキルを載せる
 
-musubiのサイトは、定義と、`registry/`に名前があるスキルを表示します。
+musubiのサイトは、定義と、GitHubで見つけたスキルを表示します。
 スキルごとに、提供するコンテンツと、準拠するコンテンツと、そのスキルに準拠しているスキルが載ります。
-リポジトリごとに`registry/<owner>/<repo>.json`というファイルを1つ置き、表示するスキルのフォルダを、リポジトリのルートからの相対パスで並べます。
+スキルを載せる時は、スキルを置いた公開リポジトリに、GitHubのリポジトリの画面のAboutの設定でトピック`musubi-skills`を付けます。
+PRは要りません。
+
+サイトは更新するたびに、トピック`musubi-skills`を持つ公開リポジトリをGitHubで検索し、デフォルトブランチで`musubi.json`と`SKILL.md`が並ぶフォルダを全て載せます。
+`musubi check`と同じチェックに通らない`musubi.json`を持つフォルダは、サイトをビルドする時にフォルダ名と理由を表示し、一覧から外します。
+サイトは見つけたスキルをそのまま載せ、運営は内容と安全性を確かめません。
+一覧とスキルのページにも、そのことを表示します。
+
+運営のスキルは、リポジトリごとに`registry/<owner>/<repo>.json`というファイルにも置き、載せるフォルダをリポジトリのルートからの相対パスで並べます。
 
 ```json
 {
@@ -81,12 +89,17 @@ musubiのサイトは、定義と、`registry/`に名前があるスキルを表
 }
 ```
 
-スキルを載せる時は、そのファイルを追加するか変更するPRを送ります。
-サイトは各フォルダの`musubi.json`と`SKILL.md`を、GitHubにあるリポジトリのデフォルトブランチから読むので、リポジトリは公開されている必要があります。
-`musubi.json`を読めないフォルダは、サイトをビルドする時にフォルダ名を表示し、一覧から外します。
+`registry/excluded.json`には、サイトに載せない物を書きます。
+リポジトリ全体は`<owner>/<repo>`、1つのフォルダは`<owner>/<repo>/<folder>`の形で並べます。
 
-サイトをビルドして手元の<http://localhost:3810/>で開く時は、`pnpm site`を実行します。
-このコマンドは`node site/build.ts`でページを`site/dist/`に書き出してから、そのフォルダを配信します。
+```json
+{
+  "excluded": ["someone/repo", "someone/other-repo/skills/old-skill"]
+}
+```
+
+サイトをビルドして手元の<http://localhost:3810/>で開く時は、`gh auth login`でログインしてから`pnpm site`を実行します。
+このコマンドは`node site/build.ts`で、ログインしたghを使ってGitHubを検索し、ページを`site/dist/`に書き出してから、そのフォルダを配信します。
 公開したサイトは<https://musubi.cardene.dev/>にあり、`pnpm site:publish`で公開する手順は[docs/publishing.ja.md](docs/publishing.ja.md)にあります。
 
 ## 文書

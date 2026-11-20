@@ -11,4 +11,5 @@
 | fingerprint | A `sha256-<base64>` digest of a content's file, its check, and the provider's `SKILL.md`, which the consumer writes next to the version range |
 | version range | The semver range of content versions a consumer accepts, such as `^1.0.0` |
 | definition version | The date of the musubi definition a `musubi.json` follows, written as `"musubi": "2026-11-19"` |
-| registry entry | The file `registry/<owner>/<repo>.json` in this repository that lists the folders of one repository's skills to show on the site |
+| registry entry | The file `registry/<owner>/<repo>.json` in this repository that lists the folders of one of the maintainers' repositories to show on the site |
+| topic `musubi-skills` | The GitHub topic an author gives a public repository so that the site finds the skills in it at its next update |

@@ -6,13 +6,16 @@ No CI builds it: the owner publishes from their machine when they decide to.
 
 ## Publish
 
-On `main`, with nothing uncommitted, run:
+On `main`, with nothing uncommitted, sign in to GitHub with gh once and run the publish command:
 
 ```bash
+gh auth login
 pnpm site:publish
 ```
 
-It builds the site into a temporary folder, reading each listed skill from GitHub, adds one commit holding the pages on top of `gh-pages`, and pushes it.
+It builds the site into a temporary folder, adds one commit holding the pages on top of `gh-pages`, and pushes it.
+The build searches GitHub, with your gh sign-in, for public repositories with the topic `musubi-skills`, and reads their skills and the skills in `registry/` from GitHub.
+When gh cannot search, the build stops before writing any page and nothing is published.
 It refuses to run on another branch or with uncommitted changes, and sends nothing when the build fails.
 It never rewrites `gh-pages` and never changes the working tree.
 GitHub Pages serves the new pages about a minute after the push.

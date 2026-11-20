@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
-import { root, skillMd, tree } from "./helpers.ts";
+import { fakeGh, root, skillMd, tree } from "./helpers.ts";
 
 const publish = join(root, "site", "publish.ts");
 
@@ -40,10 +40,11 @@ function fixture() {
       musubi: "2026-11-19",
       provides: { design: { version: "1.0.0", file: "formats/design.md" } },
     }),
+    "source/alice/skills-a/skills/design-doc/formats/design.md": "# Design\n",
     "source/alice/skills-a/skills/api-design/SKILL.md": skillMd("api-design"),
     "source/alice/skills-a/skills/api-design/musubi.json": JSON.stringify({
       musubi: "2026-11-19",
-      follows: { "design-doc/design": { version: "^1.0.0", integrity: "sha256-AAAA" } },
+      follows: { "design-doc/design": { version: "^1.0.0", integrity: `sha256-${"A".repeat(43)}=` } },
     }),
   });
   ok(dir, "init", "--quiet", "--bare", "-b", "main", "origin.git");
@@ -59,7 +60,7 @@ function fixture() {
 function run(f: { dir: string; work: string }, ...extra: string[]) {
   assert.ok(existsSync(publish), "site/publish.ts is missing");
   const args = ["--registry", join(f.dir, "registry"), "--source", join(f.dir, "source"), ...extra];
-  const r = spawnSync(process.execPath, [publish, ...args], { cwd: f.work, env, encoding: "utf8" });
+  const r = spawnSync(process.execPath, [publish, ...args], { cwd: f.work, env: { ...env, PATH: fakeGh(f.dir) }, encoding: "utf8" });
   return { code: r.status, stdout: r.stdout, stderr: r.stderr };
 }
 
@@ -141,7 +142,7 @@ test("publish-refuses-when-the-build-fails", () => {
   // A registry that is a file, not a folder, makes the build stop with an error.
   writeFileSync(join(f.dir, "not-a-folder"), "");
   const args = ["--registry", join(f.dir, "not-a-folder"), "--source", join(f.dir, "source")];
-  const r = spawnSync(process.execPath, [publish, ...args], { cwd: f.work, env, encoding: "utf8" });
+  const r = spawnSync(process.execPath, [publish, ...args], { cwd: f.work, env: { ...env, PATH: fakeGh(f.dir) }, encoding: "utf8" });
   assert.notEqual(r.status, 0, "publishing went on after the build failed");
   assert.ok(!published(f.origin), "gh-pages was sent although the build failed");
 });

@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { delimiter, dirname, join, resolve } from "node:path";
 import { after } from "node:test";
 
 export const root = resolve(import.meta.dirname, "..");
@@ -30,6 +30,40 @@ export function tree(files: Record<string, string>): string {
     writeFileSync(full, body);
   }
   return dir;
+}
+
+// A stand-in for the gh command, so the site build never reaches GitHub in a test. It answers the
+// repository search with <dir>/gh/search.json (no repositories when that file is missing), fails as
+// a signed-out gh does when <dir>/gh/fail exists, and appends each call to <dir>/gh/calls.
+// Returns the PATH that finds it before any real gh.
+export function fakeGh(dir: string): string {
+  const bin = join(dir, "bin");
+  const here = join(dir, "gh");
+  mkdirSync(bin, { recursive: true });
+  mkdirSync(here, { recursive: true });
+  const empty = JSON.stringify({ total_count: 0, incomplete_results: false, items: [] });
+  const script = [
+    "#!/bin/sh",
+    `here='${here}'`,
+    'printf "%s\\n" "$*" >> "$here/calls"',
+    'if [ -f "$here/fail" ]; then echo "To get started with GitHub CLI, please run:  gh auth login" >&2; exit 4; fi',
+    'case "$*" in',
+    `  *search/repositories*) if [ -f "$here/search.json" ]; then cat "$here/search.json"; else echo '${empty}'; fi ;;`,
+    '  *) echo "unexpected gh call: $*" >&2; exit 1 ;;',
+    "esac",
+    "",
+  ].join("\n");
+  writeFileSync(join(bin, "gh"), script, { mode: 0o755 });
+  return `${bin}${delimiter}${process.env.PATH ?? ""}`;
+}
+
+// The body the GitHub repository search returns for these repositories, public unless marked private.
+export function found(...repos: Array<string | { name: string; private: boolean }>): string {
+  const items = repos.map((repo) => {
+    const { name, private: hidden } = typeof repo === "string" ? { name: repo, private: false } : repo;
+    return { full_name: name, name: name.split("/")[1], owner: { login: name.split("/")[0] }, private: hidden, fork: false, default_branch: "main", topics: ["musubi-skills"] };
+  });
+  return JSON.stringify({ total_count: items.length, incomplete_results: false, items });
 }
 
 export type Result = { code: number | null; stdout: string; stderr: string };

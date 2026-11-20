@@ -66,8 +66,15 @@ node src/cli.ts graph examples/skills --out graph.html
 
 ## Listing a skill on the site
 
-The musubi site shows the definition and the skills named in `registry/`, with what each one provides, what it follows, and which skills follow it.
-Each repository has one file, `registry/<owner>/<repo>.json`, which lists the folders of the skills to show, relative to the repository root.
+The musubi site shows the definition and the skills it finds on GitHub, with what each one provides, what it follows, and which skills follow it.
+To list your skills, give their public repository the topic `musubi-skills` in the About settings of the repository page on GitHub.
+No pull request is needed.
+
+Each time the site is updated, it searches GitHub for public repositories with the topic `musubi-skills` and lists every folder on the default branch that holds both `musubi.json` and `SKILL.md`.
+A folder whose `musubi.json` fails the checks `musubi check` runs is named with the reason when the site is built, and left out.
+The site lists the skills as it finds them, and nobody reviews their content or their safety, as every list and skill page says.
+
+The maintainers' own skills are also named in `registry/<owner>/<repo>.json`, one file per repository, which lists the skill folders relative to the repository root.
 
 ```json
 {
@@ -75,12 +82,16 @@ Each repository has one file, `registry/<owner>/<repo>.json`, which lists the fo
 }
 ```
 
-To list your skills, send a pull request that adds or changes that file.
-The site reads each folder's `musubi.json` and `SKILL.md` from the repository's default branch on GitHub, so the repository must be public.
-A folder whose `musubi.json` cannot be read is named when the site is built and left out.
+`registry/excluded.json` names what the site leaves out: a whole repository as `<owner>/<repo>`, or one folder as `<owner>/<repo>/<folder>`.
 
-To build the site and open it on your machine at <http://localhost:3810/>, run `pnpm site`.
-It runs `node site/build.ts`, which writes the pages to `site/dist/`, and then serves that folder.
+```json
+{
+  "excluded": ["someone/repo", "someone/other-repo/skills/old-skill"]
+}
+```
+
+To build the site and open it on your machine at <http://localhost:3810/>, sign in with `gh auth login` and run `pnpm site`.
+It runs `node site/build.ts`, which searches GitHub with your gh sign-in, writes the pages to `site/dist/`, and then serves that folder.
 The public site is at <https://musubi.cardene.dev/>, and [docs/publishing.md](docs/publishing.md) explains how to publish it with `pnpm site:publish`.
 
 ## Documents

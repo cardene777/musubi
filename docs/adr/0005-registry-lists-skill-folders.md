@@ -27,3 +27,8 @@ A consumer is bound to the provider of that name in its own repository first, th
 ## Date
 
 2026-11-20
+
+## Reviewed
+
+On 2026-11-20, ADR 0006 replaced the pull requests to `registry/` with a search for the topic `musubi-skills`.
+`registry/` now holds only the maintainers' own skills and `registry/excluded.json`.
