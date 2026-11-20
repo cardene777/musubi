@@ -5,16 +5,25 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
 import { TEXT } from "../site/text.ts";
-import { DROPPED_JA, root, skillMd, tree } from "./helpers.ts";
+import { DROPPED_JA, fakeGh, found, root, skillMd, tree } from "./helpers.ts";
 
 const build = join(root, "site", "build.ts");
 const BASE = "https://musubi.example";
+const INTEGRITY = `sha256-${"A".repeat(43)}=`;
 
 const provider = (version: string) =>
-  JSON.stringify({ musubi: "2026-11-19", provides: { design: { version, file: "formats/design.md" } } });
-const consumer = JSON.stringify({
-  musubi: "2026-11-19",
-  follows: { "design-doc/design": { version: "^1.0.0", integrity: "sha256-AAAA" } },
+  JSON.stringify({ musubi: "2026-11-19", provides: { design: { version, file: "formats/design.md" } } }, null, 2);
+const consumer = JSON.stringify(
+  { musubi: "2026-11-19", follows: { "design-doc/design": { version: "^1.0.0", integrity: INTEGRITY } } },
+  null,
+  2,
+);
+
+// The files of one skill folder: SKILL.md, musubi.json, and the format file a provider names.
+const skill = (at: string, name: string, json: string): Record<string, string> => ({
+  [`${at}/SKILL.md`]: skillMd(name),
+  [`${at}/musubi.json`]: json,
+  [`${at}/formats/design.md`]: "# Design\n",
 });
 
 // Two repositories: alice lists a provider, a consumer, and a folder without musubi.json, and keeps
@@ -23,26 +32,23 @@ function fixture(extra: Record<string, string> = {}) {
   return tree({
     "registry/alice/skills-a.json": JSON.stringify({ skills: ["skills/design-doc", "skills/api-design", "skills/missing-json"] }),
     "registry/bob/tools.json": JSON.stringify({ skills: ["design-doc"] }),
-    "source/alice/skills-a/skills/design-doc/SKILL.md": skillMd("design-doc"),
-    "source/alice/skills-a/skills/design-doc/musubi.json": provider("1.0.0"),
-    "source/alice/skills-a/skills/api-design/SKILL.md": skillMd("api-design"),
-    "source/alice/skills-a/skills/api-design/musubi.json": consumer,
-    "source/alice/skills-a/skills/unlisted/SKILL.md": skillMd("unlisted"),
-    "source/alice/skills-a/skills/unlisted/musubi.json": consumer,
+    ...skill("source/alice/skills-a/skills/design-doc", "design-doc", provider("1.0.0")),
+    ...skill("source/alice/skills-a/skills/api-design", "api-design", consumer),
+    ...skill("source/alice/skills-a/skills/unlisted", "unlisted", consumer),
     "source/alice/skills-a/skills/missing-json/SKILL.md": skillMd("missing-json"),
-    "source/bob/tools/design-doc/SKILL.md": skillMd("design-doc"),
-    "source/bob/tools/design-doc/musubi.json": provider("2.0.0"),
+    ...skill("source/bob/tools/design-doc", "design-doc", provider("2.0.0")),
     ...extra,
   });
 }
 
+// The build reads the files from the source folder and the repository search from the gh stand-in.
 function run(dir: string) {
   assert.ok(existsSync(build), "site/build.ts is missing");
   const out = join(dir, "out");
   const r = spawnSync(
     process.execPath,
     [build, "--registry", join(dir, "registry"), "--source", join(dir, "source"), "--out", out, "--base-url", BASE],
-    { cwd: dir, encoding: "utf8" },
+    { cwd: dir, encoding: "utf8", env: { ...process.env, PATH: fakeGh(dir) } },
   );
   return { out, code: r.status, stdout: r.stdout, stderr: r.stderr };
 }
@@ -178,14 +184,137 @@ test("site-names-unreadable-entries", () => {
   assert.ok(!rows(page(r.out, "skills")).has("alice/skills-a/missing-json"));
 });
 
+// How many rows of the skills list name the skill, across every list page.
+const listed = (out: string, id: string) =>
+  htmlFiles(join(out, "skills"))
+    .filter((file) => /skills\/(page\/\d+\/)?index\.html$/.test(file))
+    .reduce((n, file) => n + (readFileSync(file, "utf8").match(new RegExp(`<tr data-skill="${id}">`, "g"))?.length ?? 0), 0);
+
+test("site-lists-skills-found-by-the-topic", () => {
+  const dir = fixture({ "gh/search.json": found("carol/tools"), ...skill("source/carol/tools/skills/review", "review", consumer) });
+  const { out } = built(dir);
+  assert.equal(listed(out, "carol/tools/review"), 1, "the skill in the repository with the topic is not listed");
+  for (const path of ["skills/carol/tools/review", "ja/skills/carol/tools/review"]) page(out, path);
+  const calls = readFileSync(join(dir, "gh", "calls"), "utf8");
+  assert.match(calls, /search\/repositories/, "the build did not search the repositories");
+  assert.match(calls, /topic:musubi-skills/, "the search does not ask for the topic musubi-skills");
+  assert.match(calls, /is:public/, "the search does not ask for public repositories only");
+});
+
+test("site-leaves-out-private-repositories", () => {
+  const dir = fixture({
+    "gh/search.json": found("dave/open", { name: "dave/secret", private: true }),
+    ...skill("source/dave/open/skills/shown", "shown", consumer),
+    ...skill("source/dave/secret/skills/hidden", "hidden", consumer),
+  });
+  const { out } = built(dir);
+  assert.equal(listed(out, "dave/open/shown"), 1, "the skill in the public repository is not listed");
+  assert.equal(listed(out, "dave/secret/hidden"), 0, "a skill in a private repository is listed");
+  assert.ok(!existsSync(join(out, "skills", "dave", "secret")), "a page was written for a private repository");
+});
+
+test("site-names-found-folders-without-skill-md", () => {
+  const dir = fixture({
+    "gh/search.json": found("frank/notes"),
+    "source/frank/notes/data/musubi.json": provider("1.0.0"),
+    ...skill("source/frank/notes/skills/kept", "kept", consumer),
+  });
+  const r = run(dir);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.match(r.stderr, /frank\/notes: data: .*SKILL\.md/, "the build does not name the folder without SKILL.md");
+  assert.equal(listed(r.out, "frank/notes/data"), 0, "a folder without SKILL.md is listed");
+  assert.equal(listed(r.out, "frank/notes/kept"), 1, "the skill next to it is not listed");
+});
+
+test("site-leaves-out-declarations-check-refuses", () => {
+  const badVersion = JSON.stringify({ musubi: "2026-11-19", provides: { design: { version: "one", file: "formats/design.md" } } }, null, 2);
+  const extraField = JSON.stringify({ musubi: "2026-11-19", extra: true, follows: { "design-doc/design": { version: "^1.0.0", integrity: INTEGRITY } } }, null, 2);
+  const dir = fixture({
+    "gh/search.json": found("gina/bad"),
+    ...skill("source/gina/bad/skills/odd", "odd", badVersion),
+    "registry/hank/broken.json": JSON.stringify({ skills: ["skills/loose"] }),
+    ...skill("source/hank/broken/skills/loose", "loose", extraField),
+  });
+  const r = run(dir);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.equal(listed(r.out, "gina/bad/odd"), 0, "a found skill with a wrong version is listed");
+  assert.equal(listed(r.out, "hank/broken/loose"), 0, "a registered skill with an unknown field is listed");
+  assert.match(r.stderr, /gina\/bad: skills\/odd: musubi\.json:5:.*MAJOR\.MINOR\.PATCH/, "the build does not name the wrong version at its line");
+  assert.match(r.stderr, /registry\/hank\/broken\.json: skills\/loose: musubi\.json:3: unknown field "extra"/, "the build does not name the unknown field at its line");
+});
+
+test("site-leaves-out-excluded-skills", () => {
+  const dir = fixture({
+    "registry/excluded.json": JSON.stringify({ excluded: ["ivan/all", "alice/skills-a/skills/api-design"] }),
+    "gh/search.json": found("ivan/all", "jack/kept"),
+    ...skill("source/ivan/all/skills/gone", "gone", consumer),
+    ...skill("source/jack/kept/skills/stays", "stays", consumer),
+  });
+  const r = run(dir);
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  assert.equal(listed(r.out, "ivan/all/gone"), 0, "a skill in an excluded repository is listed");
+  assert.equal(listed(r.out, "alice/skills-a/api-design"), 0, "an excluded registered folder is listed");
+  assert.equal(listed(r.out, "alice/skills-a/design-doc"), 1, "a registered folder the list does not name was left out");
+  assert.equal(listed(r.out, "jack/kept/stays"), 1, "a found skill the list does not name was left out");
+});
+
+test("site-lists-a-skill-found-twice-once", () => {
+  const r = run(fixture({ "gh/search.json": found("alice/skills-a") }));
+  assert.equal(r.code, 0, r.stdout + r.stderr);
+  for (const id of ["alice/skills-a/design-doc", "alice/skills-a/api-design", "alice/skills-a/unlisted"]) {
+    assert.equal(listed(r.out, id), 1, `${id} is not listed exactly once`);
+  }
+  assert.ok(!r.stderr.includes("also named"), "the build took a folder found twice for two folders with one name");
+});
+
+test("site-names-a-root-skill-after-its-repository", () => {
+  const dir = fixture({ "gh/search.json": found("june/solo"), ...skill("source/june/solo", "solo-skill", provider("1.0.0")) });
+  const { out } = built(dir);
+  assert.equal(listed(out, "june/solo/solo"), 1, "the skill at the root of the repository is not listed by the repository's name");
+  page(out, "skills/june/solo/solo");
+});
+
+test("site-stops-when-github-cannot-be-searched", () => {
+  const r = run(fixture({ "gh/fail": "" }));
+  assert.equal(r.code, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /gh auth login/, "the build does not tell the owner to sign in to gh");
+  assert.ok(!existsSync(join(r.out, "index.html")), "the build wrote pages although it could not search GitHub");
+});
+
+test("site-pages-say-the-skills-are-not-reviewed", () => {
+  const { out } = built();
+  for (const [path, lang] of [
+    ["skills", "en"],
+    ["ja/skills", "ja"],
+    ["skills/alice/skills-a/design-doc", "en"],
+    ["ja/skills/alice/skills-a/design-doc", "ja"],
+  ] as const) {
+    const notice = (TEXT[lang] as Record<string, string>).unreviewed;
+    assert.ok(notice, `TEXT.${lang} has no unreviewed notice`);
+    const html = page(out, path);
+    const match = /<p class="notice" data-notice="unreviewed">([\s\S]*?)<\/p>/.exec(html);
+    assert.ok(match, `/${path}/ does not say the skills are not reviewed`);
+    assert.ok(match[1].includes(escape(notice)), `/${path}/ shows another notice`);
+  }
+});
+
+test("site-tells-authors-to-add-the-topic", () => {
+  const { out } = built();
+  for (const path of [".", "ja"]) {
+    assert.match(section(page(out, path).replace(/<section class="next reveal" data-home="next">/, '<section data-section="next">'), "next"), /musubi-skills/, `${path}: the card on listing a skill does not name the topic`);
+  }
+  for (const readme of ["README.md", "README.ja.md"]) {
+    assert.ok(readFileSync(join(root, readme), "utf8").includes("musubi-skills"), `${readme} does not name the topic musubi-skills`);
+  }
+});
+
 test("site-pages-the-list-by-50", () => {
   const files: Record<string, string> = {
     "registry/carol/many.json": JSON.stringify({ skills: Array.from({ length: 51 }, (_, i) => `s${String(i).padStart(2, "0")}`) }),
   };
   for (let i = 0; i < 51; i += 1) {
     const name = `s${String(i).padStart(2, "0")}`;
-    files[`source/carol/many/${name}/SKILL.md`] = skillMd(name);
-    files[`source/carol/many/${name}/musubi.json`] = provider("1.0.0");
+    Object.assign(files, skill(`source/carol/many/${name}`, name, provider("1.0.0")));
   }
   const { out } = built(tree(files));
   const first = page(out, "skills");
@@ -340,6 +469,7 @@ test("site-defaults-to-the-public-url", () => {
   const r = spawnSync(process.execPath, [build, "--registry", join(dir, "registry"), "--source", join(dir, "source"), "--out", out], {
     cwd: dir,
     encoding: "utf8",
+    env: { ...process.env, PATH: fakeGh(dir) },
   });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const PUBLIC = "https://musubi.cardene.dev";
@@ -390,6 +520,14 @@ test("registry-entries-are-well-formed", () => {
   const entries = readdirSync(registry);
   assert.ok(entries.length > 0, "registry/ is empty");
   for (const owner of entries) {
+    if (owner === "excluded.json") {
+      const value = JSON.parse(readFileSync(join(registry, owner), "utf8"));
+      assert.deepEqual(Object.keys(value), ["excluded"], "registry/excluded.json holds fields other than excluded");
+      for (const name of value.excluded) {
+        assert.match(name, /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(\/[^/]+)*$/, `registry/excluded.json names ${name}, which is not <owner>/<repo> or <owner>/<repo>/<folder>`);
+      }
+      continue;
+    }
     assert.ok(statSync(join(registry, owner)).isDirectory(), `registry/${owner} is not an owner folder`);
     for (const file of readdirSync(join(registry, owner))) {
       const name = `registry/${owner}/${file}`;
