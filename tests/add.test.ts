@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
+import { latestDefinition } from "../src/definition.ts";
 import { DEF, fingerprintOnDisk, formatText, run, skills } from "./helpers.ts";
 
 function fixture() {
@@ -21,7 +22,7 @@ test("add-writes-the-range-and-fingerprint", () => {
   const r = run(["add", "design-doc/design"], { cwd: consumer });
   assert.equal(r.code, 0, r.stderr);
   const json = JSON.parse(readFileSync(join(consumer, "musubi.json"), "utf8"));
-  assert.equal(json.musubi, DEF);
+  assert.equal(json.musubi, latestDefinition);
   const follow = json.follows["design-doc/design"];
   assert.equal(follow.version, "^1.2.0");
   assert.equal(
@@ -92,4 +93,21 @@ test("add-prints-the-format-line-for-other-files", () => {
   for (const file of ["data/thing.json", "notes/thing.txt", "THING"]) {
     assert.match(addLines(file)[0], /^Write in the `thing` format of the `design-doc` skill: /, file);
   }
+});
+
+test("add-writes-an-optional-follow", () => {
+  const set = fixture();
+  const consumer = join(set.dir, "skills/api-design");
+  writeFileSync(join(consumer, "musubi.json"), `${JSON.stringify({ musubi: DEF }, null, 2)}\n`);
+  const r = run(["add", "design-doc/design", "--optional"], { cwd: consumer });
+  assert.equal(r.code, 0, r.stderr);
+  const json = JSON.parse(readFileSync(join(consumer, "musubi.json"), "utf8"));
+  assert.equal(json.musubi, "2026-11-20", "add --optional did not raise the definition version that knows optional");
+  assert.equal(json.follows["design-doc/design"].optional, true);
+  assert.equal(json.follows["design-doc/design"].version, "^1.2.0");
+  assert.deepEqual(r.stdout.trim().split("\n"), [
+    "When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.",
+    "If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.",
+    "If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.",
+  ]);
 });

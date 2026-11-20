@@ -56,6 +56,10 @@ export function check(roots: string[], cwd: string, update: boolean): number {
     for (const follow of declaration.follows) {
       follows += 1;
       const provider = skills.get(follow.skill);
+      if (!provider && follow.optional) {
+        report.warn(`${consumer} follows ${follow.ref} only when ${follow.skill} is installed; it is not, so this follow was skipped`);
+        continue;
+      }
       if (!provider) {
         report.problem(declaration.path, follow.line, `${consumer} follows ${follow.ref}, but no skill named ${follow.skill} is installed`);
         continue;

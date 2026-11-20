@@ -184,6 +184,23 @@ test("readme-ends-with-the-license", () => {
   }
 });
 
+test("spec-describes-the-optional-follow", () => {
+  const en = readFileSync(spec, "utf8");
+  assert.ok(en.includes("Definition version `2026-11-20`."), "spec/musubi.md does not name the definition version 2026-11-20");
+  assert.match(en, /^\| `follows\.<ref>\.optional` \| No \|/m, "spec/musubi.md has no row for optional");
+  for (const line of [
+    "When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.",
+    "If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.",
+  ]) {
+    for (const path of [spec, specJa]) assert.ok(readFileSync(path, "utf8").includes(line), `${path} does not show: ${line}`);
+  }
+  const ja = readFileSync(specJa, "utf8");
+  assert.ok(ja.includes("定義のバージョンは`2026-11-20`。"), "spec/musubi.ja.md does not name the definition version 2026-11-20");
+  assert.match(ja, /^\| `follows\.<参照>\.optional` \| いいえ \|/m, "spec/musubi.ja.md has no row for optional");
+  assert.match(readFileSync(join(root, "GLOSSARY.md"), "utf8"), /^\| optional follow \|/m, "GLOSSARY.md does not define optional follow");
+  assert.match(readFileSync(join(root, "GLOSSARY.ja.md"), "utf8"), /^\| 任意の準拠 \|/m, "GLOSSARY.ja.md does not define 任意の準拠");
+});
+
 test("publishing-doc-shows-the-manual-steps", () => {
   for (const [doc, readme] of [
     ["docs/publishing.md", "README.md"],

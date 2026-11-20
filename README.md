@@ -59,6 +59,7 @@ A consumer lists the content it follows, the versions it accepts, and the finger
 ```
 
 The consumer's `SKILL.md` body tells the agent to open the `design-doc` skill by name and read its `design` format, so agents need nothing new to load it.
+A consumer that also works without the provider names definition version `2026-11-20` and adds `"optional": true` to the follow; the agent then goes on without the content when the provider is not installed.
 [examples/skills](examples/skills) holds both skills.
 
 ## Checking

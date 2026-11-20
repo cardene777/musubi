@@ -555,3 +555,32 @@ test("registry-lists-the-first-skills", () => {
     "plugins/evm-dev/skills/wallet-design",
   ]);
 });
+
+test("site-marks-optional-follows", () => {
+  const optionalFollow = JSON.stringify(
+    { musubi: "2026-11-20", follows: { "design-doc/design": { version: "^1.0.0", integrity: INTEGRITY, optional: true } } },
+    null,
+    2,
+  );
+  const dir = fixture({
+    "registry/kate/notes.json": JSON.stringify({ skills: ["skills/memo"] }),
+    ...skill("source/kate/notes/skills/memo", "memo", optionalFollow),
+  });
+  const { out } = built(dir);
+  for (const [path, mark] of [
+    ["skills", "optional"],
+    ["ja/skills", "任意"],
+  ]) {
+    const row = rows(page(out, path)).get("kate/notes/memo");
+    assert.ok(row, `/${path}/ does not list the skill with an optional follow`);
+    assert.match(row, new RegExp(`design-doc/design[^<]*<span class="optional">${mark}</span>`), `/${path}/ does not mark the optional follow`);
+  }
+  for (const [path, mark] of [
+    ["skills/kate/notes/memo", "optional"],
+    ["ja/skills/kate/notes/memo", "任意"],
+  ]) {
+    assert.match(section(page(out, path), "follows"), new RegExp(`<span class="optional">${mark}</span>`), `/${path}/ does not mark the optional follow`);
+  }
+  const required = rows(page(out, "skills")).get("alice/skills-a/api-design") ?? "";
+  assert.ok(!required.includes('class="optional"'), "a required follow is marked optional");
+});

@@ -48,3 +48,18 @@ test("schema-rejects-an-unknown-field", () => {
   (nested.provides.design as Record<string, unknown>).kind = "format";
   assert.equal(validate(nested), false);
 });
+
+test("schema-accepts-an-optional-follow", () => {
+  const next = join(root, "schema", "2026-11-20", "musubi.schema.json");
+  assert.ok(existsSync(next), "the schema is missing at schema/2026-11-20/musubi.schema.json");
+  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  const validateNext = ajv.compile(JSON.parse(readFileSync(next, "utf8")));
+  const follow = (musubi: string, value: unknown) => ({
+    musubi,
+    follows: { "design-doc/design": { version: "^1.0.0", integrity: `sha256-${"A".repeat(43)}=`, optional: value } },
+  });
+  assert.ok(validateNext(follow("2026-11-20", true)), JSON.stringify(validateNext.errors));
+  assert.ok(validateNext(follow("2026-11-20", false)), JSON.stringify(validateNext.errors));
+  assert.equal(validateNext(follow("2026-11-20", "yes")), false);
+  assert.equal(validator()(follow(DEF, true)), false, "the 2026-11-19 schema accepts optional");
+});

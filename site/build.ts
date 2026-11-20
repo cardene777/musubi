@@ -47,7 +47,7 @@ const repoUrl = String(pkg.repository?.url ?? "").replace(/^git\+/, "").replace(
 
 type Options = { registry: string; source: string | null; out: string; base: string };
 type Provided = { name: string; version: string; file: string; check: string };
-type Followed = { ref: string; skill: string; content: string; range: string };
+type Followed = { ref: string; skill: string; content: string; range: string; optional: boolean };
 type Skill = {
   id: string;
   owner: string;
@@ -339,7 +339,7 @@ function readSkill(c: Candidate, name: string, text: string, skillMd: string): S
         .filter(([ref]) => /^[^/]+\/[^/]+$/.test(ref))
         .map(([ref, v]) => {
           const [skill, content] = ref.split("/");
-          return { ref, skill, content, range: isObject(v) ? str(v.version) : "" };
+          return { ref, skill, content, range: isObject(v) ? str(v.version) : "", optional: isObject(v) && v.optional === true };
         })
     : [];
   return {
@@ -602,6 +602,11 @@ function figureHtml(lang: Lang, f: Figure): string {
 
 // A declaration under examples/ shown as code: the provided content or followed reference in a color,
 // the other keys brighter than the values, and a fingerprint cut short so the line fits the column.
+// The mark on a follow the skill also runs without (decision record 0007).
+function optionalMark(f: Followed, t: Record<Key, string>): string {
+  return f.optional ? `<span class="optional">${escape(t.optional)}</span>` : "";
+}
+
 function declaration(name: string, key: "provides" | "follows", mark: string): string {
   const value = JSON.parse(exampleJson(name))[key] as Record<string, unknown>;
   const text = `"${key}": ${JSON.stringify(value, null, 2)}`.replace(/"(sha256-[A-Za-z0-9+/]{4})[A-Za-z0-9+/=]+"/g, '"$1…"');
@@ -813,7 +818,7 @@ function listPage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], page:
         ? `<div class="inline">${s.provides.map((p) => `<span class="chip provides">${escape(`${p.name} ${p.version}`)}</span>`).join("")}</div>`
         : '<span class="muted">—</span>';
       const follows = s.follows.length
-        ? `<div class="stack">${s.follows.map((f) => `<span class="chip follows">${escape(`${f.ref} ${f.range}`)}</span>`).join("")}</div>`
+        ? `<div class="stack">${s.follows.map((f) => `<span class="chip follows">${escape(`${f.ref} ${f.range}`)}${optionalMark(f, t)}</span>`).join("")}</div>`
         : '<span class="muted">—</span>';
       const n = followers(s);
       return `<tr data-skill="${escape(s.id)}"><td><a class="name" href="${at(lang, skillPath(s))}">${escape(s.name)}</a><span class="repo">${escape(`${s.owner}/${s.repo}`)}</span></td><td>${provides}</td><td>${follows}</td><td class="count${n === 0 ? " muted" : ""}">${n}</td></tr>`;
@@ -882,7 +887,7 @@ function skillPage(o: Options, lang: Lang, skill: Skill, arrows: Link[]): Page {
             const name = a.to
               ? `<a href="${at(lang, skillPath(a.to))}">${escape(f.ref)}<span class="repo">${escape(`${a.to.owner}/${a.to.repo}`)}</span></a>`
               : `<span>${escape(f.ref)}<span class="repo">${escape(t.notListed)}</span></span>`;
-            return `<li>${name}<span class="chip follows">${escape(f.range)}</span></li>`;
+            return `<li>${name}<span class="chip follows">${escape(f.range)}${optionalMark(f, t)}</span></li>`;
           }),
         )
         .join("")}</ul>`

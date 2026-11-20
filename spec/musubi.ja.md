@@ -1,6 +1,6 @@
 # musubiの定義
 
-定義のバージョンは`2026-11-19`。
+定義のバージョンは`2026-11-20`。
 
 musubiは、文書の書式や書き方のルールのように、エージェントのスキルが提供するコンテンツと、そのコンテンツに準拠するスキルを結び付ける。
 あるスキルがコンテンツを名前とバージョン付きで宣言し、別のスキルがそのコンテンツに準拠すると宣言する。
@@ -86,6 +86,7 @@ consumerのスキルは、準拠するコンテンツを`musubi.json`の`follows
 | `follows.<参照>.version` | はい | consumerが受け入れるバージョン。形はバージョンとフィンガープリントの節で定める |
 | `follows.<参照>.integrity` | はい | 最後にチェックした時のコンテンツのフィンガープリント |
 | `follows.<参照>.examples` | いいえ | providerのチェックを適用する、consumerのファイル |
+| `follows.<参照>.optional` | いいえ | providerが無くてもconsumerが動く時に`true`を書く。下で定める |
 
 consumerの`SKILL.md`の本文には、準拠するコンテンツごとに次の3行を書く。
 この3行は`musubi add`が出力する。
@@ -103,6 +104,16 @@ If the `design-doc` skill is not installed, do not start: tell the user that `de
 Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.
 ```
 
+providerのスキルがインストールされていなくても動くconsumerは、その準拠に`optional: true`を書く。
+この準拠を任意の準拠と呼ぶ (判断の記録[0007](../docs/adr/0007-optional-follows.ja.md))。
+任意の準拠では、`musubi add --optional`が代わりに次の3行を出力する。
+
+```text
+When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
+If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
+If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.
+```
+
 consumerは、準拠するコンテンツに自分の節を追加できる。
 ただし、providerのチェックが求めるものを削除したり、名前を変えたりはできない。
 1つのスキルが、コンテンツを提供しながら別のコンテンツに準拠してもよい。
@@ -116,7 +127,7 @@ consumerは、準拠するコンテンツに自分の節を追加できる。
 1. エージェントは、ほかのスキルと同じように、consumerの`SKILL.md`を読む。
 2. 本文は、providerのスキルとコンテンツを名前で示す。エージェントはインストール済みのスキルからproviderのスキルを名前で開き、providerの本文がそのコンテンツについて指定するファイルを読む。
 3. エージェントはそのファイルだけを全文読む。providerのほかのコンテンツは読まない。
-4. providerのスキルがインストールされていない時、エージェントは作業を始めない。足りないスキルとそのインストール方法をユーザーに伝えて止まる。
+4. providerのスキルがインストールされていない時、エージェントは作業を始めない。足りないスキルとそのインストール方法をユーザーに伝えて止まる。任意の準拠の時は止まらず、そのコンテンツ無しで作業を続ける。
 
 Claude Code、Codex、GitHub Copilot CLI、Gemini CLIはどれもインストール済みのスキルを名前で一覧にするので、スキルがどこにインストールされていても名前で開ける。
 別々のプラグインからインストールした2つのスキルは同じ場所に並ぶとは限らないので、スキルのフォルダどうしの相対パスは使わない。
@@ -168,6 +179,8 @@ integrity = "sha256-" + base64(sha256 digest)
 `musubi.json`とチェックのファイルは、準拠する日付を`musubi`のフィールドに書く。
 `musubi check`は知っている日付を全て読み、それ以外の日付を拒否する。
 知っている日付は、`schema/`の下にあるフォルダの名前である。
+定義のバージョン`2026-11-20`で`follows.<参照>.optional`を加えた。
+`2026-11-19`を書いた`musubi.json`は今も通り、`optional`は書けない。
 
 ## 再チェック
 
@@ -180,12 +193,14 @@ consumerは、スキルをインストールした後と、スキルを更新し
 - バージョンが`MAJOR.MINOR.PATCH`の形でない、範囲が3つの形のどれでもない
 - ファイル、チェック、例のパスがスキルのフォルダの外へ出るか、存在しないファイルを指している
 - チェックがJSONのルールのファイルでない
-- consumerが、インストールされていないスキルか、そのスキルが提供していないコンテンツに準拠している
+- consumerが、インストールされていないスキル (任意の準拠を除く) か、そのスキルが提供していないコンテンツに準拠している
 - providerのバージョンがconsumerの範囲の外にある
 - フィンガープリントが一致しない。最後のチェックの後にコンテンツが変わったことを表す
 - 例がproviderのチェックのルールに違反している
 - スキルどうしが循環して準拠している (`alpha -> beta -> alpha`など)
 
+任意の準拠のスキルがインストールされていない時、`musubi check`は警告を出してその準拠を飛ばす。
+インストールされている時は、ほかの準拠と同じようにチェックする。
 循環しない限り、準拠の連鎖はどれだけ深くてもよい。
 フィンガープリントが一致しない時、そのコンテンツはまだ受け入れられていないので、`musubi check`はそのproviderのチェックを適用しない。
 `musubi check --update`は変わったコンテンツにチェックを適用し、全ての例が通った時だけフィンガープリントを書き換える。
@@ -242,5 +257,5 @@ providerのコードは実行しない (判断の記録[0004](../docs/adr/0004-c
 | コマンド | すること |
 |---|---|
 | `musubi check [<フォルダ>...] [--update]` | フォルダの中の全ての`musubi.json`を、再チェックの節のとおりにチェックする |
-| `musubi add <スキル名>/<名前> [<フォルダ>...]` | consumerのフォルダで実行する。`musubi.json`に範囲`^<今のバージョン>`とフィンガープリントを書き込み、既にあるフィールドは残し、`SKILL.md`に置く3行を出力する |
+| `musubi add <スキル名>/<名前> [<フォルダ>...] [--optional]` | consumerのフォルダで実行する。`musubi.json`に範囲`^<今のバージョン>`とフィンガープリントを書き込み、既にあるフィールドは残し、`SKILL.md`に置く3行を出力する。`--optional`を付けると`optional: true`も書き、`musubi`が`optional`を持たない定義のバージョンなら最新の定義のバージョンに上げ、任意の準拠の3行を出力する |
 | `musubi graph [<フォルダ>...] [--out <ファイル>]` | 各スキルと、準拠するコンテンツへの矢印を描いたHTMLのページを1つ書き出す |

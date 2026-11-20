@@ -11,8 +11,9 @@ const USAGE = `usage:
       Checks every musubi.json in the folders. Without folders it reads .claude/skills, .agents/skills,
       .github/skills, and .gemini/skills in this folder and in the home folder.
       --update rewrites a fingerprint after its content passes the check again.
-  musubi add <skill>/<content> [<skills folder>...]
+  musubi add <skill>/<content> [<skills folder>...] [--optional]
       Run in a skill's folder: makes the skill follow the content and prints the lines for its SKILL.md.
+      --optional makes the follow optional: the skill reads the content only when the provider is installed.
   musubi graph [<skills folder>...] [--out <file>]
       Writes an HTML page of the skills and the contents they follow (default musubi-graph.html).
 `;
@@ -29,7 +30,7 @@ function main(argv: string[]): number {
       i += 1;
     } else if (!rest[i].startsWith("--")) positional.push(rest[i]);
   }
-  const unknown = [...flags].filter((flag) => !(command === "check" && flag === "--update") && !(command === "graph" && flag === "--out"));
+  const unknown = [...flags].filter((flag) => !(command === "check" && flag === "--update") && !(command === "graph" && flag === "--out") && !(command === "add" && flag === "--optional"));
   if (command === "--help" || command === "-h") {
     process.stdout.write(USAGE);
     return 0;
@@ -46,7 +47,7 @@ function main(argv: string[]): number {
     case "add": {
       const [ref, ...given] = positional;
       if (!ref) break;
-      return add(ref, roots(given, [resolve(cwd, "..")]), cwd);
+      return add(ref, roots(given, [resolve(cwd, "..")]), cwd, flags.has("--optional"));
     }
     case "graph":
       return graph(roots(positional), resolve(cwd, out), cwd);

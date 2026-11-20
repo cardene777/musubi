@@ -1,6 +1,6 @@
 # The musubi definition
 
-Definition version `2026-11-19`.
+Definition version `2026-11-20`.
 
 musubi binds the content one agent skill provides, such as a document format or writing rules, to the skills that follow it.
 A skill declares that content under a name and a version, another skill declares that it follows it, agents load it the same way in every agent that reads `SKILL.md`, and the skills that follow it are checked again when it changes.
@@ -84,6 +84,7 @@ A consumer skill lists the content it follows under `follows` in `musubi.json`.
 | `follows.<ref>.version` | Yes | The versions the consumer accepts, described in Versions and fingerprints |
 | `follows.<ref>.integrity` | Yes | The fingerprint of the content at the last check |
 | `follows.<ref>.examples` | No | Files of the consumer that the provider's check is applied to |
+| `follows.<ref>.optional` | No | `true` when the consumer also works without the provider, described below |
 
 The consumer's `SKILL.md` body carries three lines for each content it follows, which `musubi add` prints.
 
@@ -99,6 +100,15 @@ When the content's file is a script, told apart by the extensions `.py`, `.sh`, 
 Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.
 ```
 
+A consumer that also works without the provider writes `optional: true` in that follow, which makes it an optional follow (decision record [0007](../docs/adr/0007-optional-follows.md)).
+For an optional follow, `musubi add --optional` prints these three lines instead.
+
+```text
+When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
+If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
+If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.
+```
+
 A consumer may add its own sections to the content it follows.
 It may not remove or rename what the provider's check requires.
 A skill may both provide content and follow content; a provider's format may follow shared writing rules, for example.
@@ -111,7 +121,7 @@ An agent that knows nothing of musubi therefore loads content the same way as on
 1. The agent reads the consumer's `SKILL.md`, as it does for any skill.
 2. The body names the provider skill and the content. The agent opens the provider skill by name from the skills it has installed and reads the file that the provider's body names for that content.
 3. The agent reads only that file, whole. It does not read the provider's other content.
-4. When the provider skill is not installed, the agent does not start; it tells the user which skill is missing and how to install it, and stops.
+4. When the provider skill is not installed, the agent does not start; it tells the user which skill is missing and how to install it, and stops. When the follow is optional, the agent goes on without that content instead.
 
 Claude Code, Codex, GitHub Copilot CLI, and Gemini CLI each list installed skills by name, so opening a skill by name works wherever the skill is installed.
 Relative paths between skill folders are not used, because two skills from different plugins are not installed side by side.
@@ -159,6 +169,7 @@ The range and the fingerprint sit together in `musubi.json`; there is no lockfil
 The definition itself is versioned by date.
 Each `musubi.json` and each check file names the date it follows in `musubi`, and `musubi check` reads every date it knows and refuses the others.
 The dates it knows are the folders under `schema/`.
+Definition version `2026-11-20` added `follows.<ref>.optional`; a `musubi.json` that names `2026-11-19` still passes and may not use it.
 
 ## Re-checking
 
@@ -170,12 +181,13 @@ A consumer is checked again after a skill is installed, after a skill is updated
 - a version is not `MAJOR.MINOR.PATCH`, or a range is not one of the three forms
 - a file, check, or example path leaves the skill folder or names a missing file
 - a check is not a JSON rules file
-- a consumer follows a skill that is not installed, or a content that skill does not provide
+- a consumer follows a skill that is not installed (except in an optional follow), or a content that skill does not provide
 - the provider's version is outside the consumer's range
 - the fingerprint does not match, which means the content changed after the last check
 - an example breaks a rule of the provider's check
 - skills follow each other in a cycle, such as `alpha -> beta -> alpha`
 
+When the skill of an optional follow is not installed, `musubi check` warns and skips that follow; when it is installed, the follow is checked like any other.
 Chains of any depth are allowed as long as they do not form a cycle.
 When a fingerprint does not match, `musubi check` does not apply that provider's check, because its content has not been accepted.
 `musubi check --update` applies the check to the changed content and rewrites the fingerprint only when every example passes; when one fails, the fingerprint stays as it was.
@@ -229,5 +241,5 @@ The command needs Node.js 22.18 or later and has no runtime dependencies.
 | Command | Does |
 |---|---|
 | `musubi check [<folder>...] [--update]` | Checks every `musubi.json` in the folders, as described in Re-checking |
-| `musubi add <skill>/<content> [<folder>...]` | Run in a consumer's folder: writes the range `^<current version>` and the fingerprint into its `musubi.json`, keeps the fields already there, and prints the three lines for its `SKILL.md` |
+| `musubi add <skill>/<content> [<folder>...] [--optional]` | Run in a consumer's folder: writes the range `^<current version>` and the fingerprint into its `musubi.json`, keeps the fields already there, and prints the three lines for its `SKILL.md`. With `--optional` it also writes `optional: true`, moves `musubi` to the latest definition version when the file names one without `optional`, and prints the three lines for an optional follow |
 | `musubi graph [<folder>...] [--out <file>]` | Writes one HTML page that draws each skill and an arrow to each content it follows |
