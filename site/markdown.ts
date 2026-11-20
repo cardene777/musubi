@@ -15,7 +15,7 @@ function inline(text: string, link: (href: string) => string): string {
       return escape(part).replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label: string, href: string) => {
         const target = link(href.replace(/&amp;/g, "&"));
         const external = /^https?:/.test(target);
-        return `<a href="${escape(target)}"${external ? ' rel="noopener"' : ""}>${label}</a>`;
+        return `<a href="${escape(target)}"${external ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
       });
     })
     .join("");

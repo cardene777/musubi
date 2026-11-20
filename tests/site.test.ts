@@ -586,3 +586,21 @@ test("site-marks-optional-follows", () => {
   const required = rows(page(out, "skills")).get("alice/skills-a/api-design") ?? "";
   assert.ok(!required.includes('class="optional"'), "a required follow is marked optional");
 });
+
+test("site-opens-outside-links-in-a-new-tab", () => {
+  const { out } = built();
+  let outside = 0;
+  for (const path of htmlFiles(out)) {
+    for (const tag of readFileSync(path, "utf8").match(/<a\b[^>]*>/g) ?? []) {
+      const href = tag.match(/\bhref="([^"]*)"/)?.[1] ?? "";
+      if (/^https?:/.test(href)) {
+        outside += 1;
+        assert.match(tag, /\btarget="_blank"/, `${relative(out, path)}: ${tag} does not open in a new tab`);
+        assert.match(tag, /\brel="[^"]*\bnoopener\b/, `${relative(out, path)}: ${tag} has no rel="noopener"`);
+      } else {
+        assert.doesNotMatch(tag, /\btarget=/, `${relative(out, path)}: ${tag} opens a page of the site in a new tab`);
+      }
+    }
+  }
+  assert.ok(outside > 0, "the built pages have no outside links to check");
+});
