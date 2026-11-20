@@ -92,7 +92,6 @@ No pull request is needed.
 
 Each time the site is updated, it searches GitHub for public repositories with the topic `musubi-skills` and lists every folder on the default branch that holds both `musubi.json` and `SKILL.md`.
 A folder whose `musubi.json` fails the checks `musubi check` runs is named with the reason when the site is built, and left out.
-The site lists the skills as it finds them, and nobody reviews their content or their safety, as every list and skill page says.
 
 The maintainers' own skills are also named in `registry/<owner>/<repo>.json`, one file per repository, which lists the skill folders relative to the repository root.
 

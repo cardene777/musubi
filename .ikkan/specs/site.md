@@ -64,7 +64,6 @@
 | `registry/`と検索の両方が同じリポジトリを名指した時、そのリポジトリのスキルをどれも1件ずつ載せる | `pnpm test`の検査`site-lists-a-skill-found-twice-once`が通る | #20 |
 | リポジトリの直下に`musubi.json`と`SKILL.md`が並ぶ時、そのスキルをリポジトリの名前で載せる | `pnpm test`の検査`site-names-a-root-skill-after-its-repository`が通る | #20 |
 | `gh`で検索できない時、ビルドはページを書き出さずに終わり方1で止まり、`gh auth login`を案内する | `pnpm test`の検査`site-stops-when-github-cannot-be-searched`が通る | #20 |
-| 英語と日本語のスキルの一覧とスキルのページは、運営が内容と安全性を確かめていないと伝える | `pnpm test`の検査`site-pages-say-the-skills-are-not-reviewed`が通る | #20 |
 | 英語と日本語のトップページの「スキルを載せる」と、`README.md`と`README.ja.md`は、公開リポジトリにトピック`musubi-skills`を付ければ次の公開で載ると案内する | `pnpm test`の検査`site-tells-authors-to-add-the-topic`が通る | #20 |
 | `docs/publishing.md`と`docs/publishing.ja.md`は、公開の前に`gh auth login`でログインしておく手順を示す | `pnpm test`の検査`publishing-doc-says-to-sign-in-to-gh`が通る | #20 |
 | `registry/`に載ったスキルは、リポジトリにトピックが無くても一覧に載る | `pnpm test`の検査`site-lists-registered-skills`が通る | #20 |
@@ -73,4 +72,9 @@
 | ビルドが落ちた時、公開の命令は`gh-pages`へ送らない | `pnpm test`の検査`publish-refuses-when-the-build-fails`が通る | #20 |
 | `README.md`と`README.ja.md`は、サイトを組み立てる命令と、本人のスキルを並べる`registry/<owner>/<repo>.json`を示す | `pnpm test`の検査`readme-shows-how-to-register`が通る | #20 |
 | `registry/`の下のfileは、`registry/<持ち主>/<repo>.json`と`registry/excluded.json`だけで、どちらも決まった形を持つ | `pnpm test`の検査`registry-entries-are-well-formed`が通る | #20 |
-| 英語の文書と日本語の対の文書は、同じ見出しと表とコードの塊を持つ | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #20 |
+| 英語の文書と日本語の対の文書は、同じ見出しと表とコードの塊を持つ | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #20 #27 |
+| 英語と日本語の一覧とスキルのページと`README.md`と`README.ja.md`は、内容と安全性を確かめていないという注意の文を出さない | `pnpm test`の検査`site-pages-show-no-review-notice`が通る | #27 |
+| 日本語の文書は、サイトを持つ人を「運営」と書かない | `pnpm test`の検査`ja-docs-use-the-glossary-terms`が通る | #27 |
+| サイトの日本語の文言は、サイトを持つ人を「運営」と書かない | `pnpm test`の検査`site-ja-text-uses-the-glossary-terms`が通る | #27 |
+| トップの「スキルを載せる」とREADMEは、トピック`musubi-skills`を付ければ載ると案内する | `pnpm test`の検査`site-tells-authors-to-add-the-topic`が通る | #27 |
+| トピック`musubi-skills`を持つ公開リポジトリのスキルは一覧とスキルのページに載る | `pnpm test`の検査`site-lists-skills-found-by-the-topic`が通る | #27 |

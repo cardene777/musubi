@@ -31,4 +31,4 @@ consumerは、まず同じリポジトリにある同じ名前のproviderと結�
 ## 見直し
 
 2026-11-20に、ADR 0006で`registry/`へのPRを、トピック`musubi-skills`の検索に置き換えた。
-`registry/`には運営のスキルと`registry/excluded.json`だけを置く。
+`registry/`には管理者のスキルと`registry/excluded.json`だけを置く。

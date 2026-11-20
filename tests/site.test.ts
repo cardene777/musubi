@@ -281,20 +281,16 @@ test("site-stops-when-github-cannot-be-searched", () => {
   assert.ok(!existsSync(join(r.out, "index.html")), "the build wrote pages although it could not search GitHub");
 });
 
-test("site-pages-say-the-skills-are-not-reviewed", () => {
+test("site-pages-show-no-review-notice", () => {
   const { out } = built();
-  for (const [path, lang] of [
-    ["skills", "en"],
-    ["ja/skills", "ja"],
-    ["skills/alice/skills-a/design-doc", "en"],
-    ["ja/skills/alice/skills-a/design-doc", "ja"],
-  ] as const) {
-    const notice = (TEXT[lang] as Record<string, string>).unreviewed;
-    assert.ok(notice, `TEXT.${lang} has no unreviewed notice`);
+  for (const lang of ["en", "ja"] as const) assert.ok(!("unreviewed" in TEXT[lang]), `TEXT.${lang} still holds the review notice`);
+  for (const path of ["skills", "ja/skills", "skills/alice/skills-a/design-doc", "ja/skills/alice/skills-a/design-doc"]) {
     const html = page(out, path);
-    const match = /<p class="notice" data-notice="unreviewed">([\s\S]*?)<\/p>/.exec(html);
-    assert.ok(match, `/${path}/ does not say the skills are not reviewed`);
-    assert.ok(match[1].includes(escape(notice)), `/${path}/ shows another notice`);
+    assert.ok(!html.includes('data-notice="unreviewed"'), `/${path}/ still shows the review notice`);
+    assert.ok(!/safety|安全性/.test(html), `/${path}/ still says nobody checks the safety of the skills`);
+  }
+  for (const readme of ["README.md", "README.ja.md"]) {
+    assert.ok(!/safety|安全性/.test(readFileSync(join(root, readme), "utf8")), `${readme} still says nobody checks the safety of the skills`);
   }
 });
 
