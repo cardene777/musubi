@@ -52,3 +52,7 @@
 | 線は出る側の箱から文字の幅より長く真っすぐに出て、曲がり始めるのは文字の右端より先になる | `pnpm test`の検査`graph-edges-run-straight-under-their-labels`が通る | #19 |
 | `musubi graph`は、スキルごとの箱と準拠する先への線を書き出す | `pnpm test`の検査`graph-writes-the-skills-and-edges`が通る | #19 |
 | スキルのページは、準拠する先と準拠している先を両方挙げ、両方の線を描く | `pnpm test`の検査`site-skill-page-shows-both-directions`が通る | #19 |
+| ビルドした全てのページは、スタイルを`/assets/site.css?v=<印>`で読み、印は書き出した`site.css`の中身のSHA-256の先頭12桁と一致する | `pnpm test`の検査`site-pages-link-the-stylesheet-by-content`が通る | #22 |
+| 印の無い`/assets/site.css`を読むページを、ビルドは書き出さない | `pnpm test`の検査`site-pages-link-the-stylesheet-by-content`が通る | #22 |
+| 全てのページは、サイトの1つのスタイルのファイルだけを読み、ヘッダーとフッターを1つずつ持つ | `pnpm test`の検査`site-pages-share-one-stylesheet`が通る | #22 |
+| `pnpm site:publish`は、ビルドしたページを`gh-pages`に1つのコミットで足す | `pnpm test`の検査`publish-commits-the-site-to-gh-pages`が通る | #22 |
