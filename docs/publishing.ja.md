@@ -36,8 +36,10 @@ repoをドメインに向ける前にドメインを確認し、ほかのアカ�
 `CNAME`のレコードはDNSのみのままにする。
 GitHub Pagesは、自分に直に届く時だけHTTPSの証明書を出すため。
 
-最初の`pnpm site:publish`の後に、repoのPagesを枝とドメインに向ける。
-次をこのrepoの中で打つと、`gh`が持ち主とrepoの名前を埋める。
+最初の`pnpm site:publish`が`gh-pages`の枝を作ると、GitHubがその枝のPagesを自動でオンにする。
+その後に、次をこのrepoの中で打って独自ドメインを設定する。
+`gh`が持ち主とrepoの名前を埋める。
+1行目はPagesがまだオフの時だけ要り、オンの時は`GitHub Pages is already enabled`で断られる。
 
 ```bash
 gh api --method POST "repos/{owner}/{repo}/pages" -f "source[branch]=gh-pages" -f "source[path]=/"
