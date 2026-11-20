@@ -111,3 +111,24 @@ test("add-writes-an-optional-follow", () => {
     "If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.",
   ]);
 });
+
+test("add-writes-the-languages-of-an-optional-follow", () => {
+  const set = fixture();
+  const consumer = join(set.dir, "skills/api-design");
+  writeFileSync(join(consumer, "musubi.json"), `${JSON.stringify({ musubi: DEF }, null, 2)}\n`);
+  const r = run(["add", "design-doc/design", "--optional", "--lang", "ja"], { cwd: consumer });
+  assert.equal(r.code, 0, r.stderr);
+  const json = JSON.parse(readFileSync(join(consumer, "musubi.json"), "utf8"));
+  assert.equal(json.musubi, "2026-11-21", "add --lang did not raise the definition version that knows when");
+  assert.equal(json.follows["design-doc/design"].optional, true);
+  assert.deepEqual(json.follows["design-doc/design"].when, { languages: ["ja"] });
+});
+
+test("add-refuses-languages-without-optional", () => {
+  const set = fixture();
+  const consumer = join(set.dir, "skills/api-design");
+  const r = run(["add", "design-doc/design", "--lang", "ja"], { cwd: consumer });
+  assert.equal(r.code, 2, r.stderr);
+  assert.match(r.stderr, /--lang needs --optional/, r.stderr);
+  assert.ok(!existsSync(join(consumer, "musubi.json")), "add wrote musubi.json although it refused");
+});
