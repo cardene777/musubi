@@ -47,3 +47,16 @@
 | 中身のfileが`.json`、`.txt`、拡張子の無いfileの時も、`musubi add`は今の書式の行を出す | `pnpm test`の検査`add-prints-the-format-line-for-other-files`が通る | #6 |
 | `spec/musubi.md`と`spec/musubi.ja.md`は、命令のfileの中身に出す1行目を、`musubi add`が出す文と同じ文で示す | `pnpm test`の検査`spec-shows-the-run-line-for-a-script`が通る | #6 |
 | 2つの仕様のページの形 (見出しと表と囲み) は、英語と日本語で揃ったままである | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #6 |
+| 定義のバージョン`2026-11-20`の`musubi.json`で、任意の準拠の提供する側のスキルが入っていない時、`musubi check`は終わり方0で終わり、飛ばした準拠を警告に名指す | `pnpm test`の検査`check-skips-an-optional-follow-whose-provider-is-missing`が通る | #29 |
+| 任意の準拠の提供する側のスキルが入っている時、`musubi check`はフィンガープリントの違いを今どおり問題として拒む | `pnpm test`の検査`check-checks-an-optional-follow-whose-provider-is-installed`が通る | #29 |
+| 定義のバージョン`2026-11-19`の`musubi.json`が`optional`を書いた時と、`optional`が真偽値でない時、`musubi check`は行を名指して拒む | `pnpm test`の検査`check-refuses-optional-it-cannot-read`が通る | #29 |
+| `musubi add <skill>/<content> --optional`は、`optional: true`と`"musubi": "2026-11-20"`を書き、入っている時だけ読み、入っていない時はそのコンテンツ無しで続ける`SKILL.md`の3行を出す | `pnpm test`の検査`add-writes-an-optional-follow`が通る | #29 |
+| `schema/2026-11-20/musubi.schema.json`は任意の準拠を受け付け、`schema/2026-11-19/musubi.schema.json`は拒む | `pnpm test`の検査`schema-accepts-an-optional-follow`が通る | #29 |
+| 定義の英語版と日本語版は、定義のバージョン`2026-11-20`と、`optional`の項目と、任意の準拠の`SKILL.md`の3行を示し、用語集は任意の準拠を説明する | `pnpm test`の検査`spec-describes-the-optional-follow`が通る | #29 |
+| サイトの一覧とスキルのページは、任意の準拠に英語で`optional`、日本語で「任意」の印を付ける | `pnpm test`の検査`site-marks-optional-follows`が通る | #29 |
+| `optional`を書かない準拠で提供する側のスキルが入っていない時、`musubi check`は今どおり拒む | `pnpm test`の検査`check-refuses-a-missing-provider`が通る | #29 |
+| `musubi add`は、新しい`musubi.json`に最新の定義のバージョンと範囲とフィンガープリントを書く | `pnpm test`の検査`add-writes-the-range-and-fingerprint`が通る | #29 |
+| `musubi add`は、`optional`を付けない時、今の3行を出す | `pnpm test`の検査`add-prints-the-body-lines`が通る | #29 |
+| 定義のバージョン`2026-11-19`の例のスキルは、今どおり`musubi check`を通る | `pnpm test`の検査`check-passes-the-examples`が通る | #29 |
+| 知らない定義のバージョンを書いた`musubi.json`を、`musubi check`は今どおり拒む | `pnpm test`の検査`check-refuses-an-unknown-definition-version`が通る | #29 |
+| 英語の文書と日本語の対の文書は、同じ見出しと表とコードの塊を持つ | `pnpm test`の検査`doc-pairs-have-the-same-shape`が通る | #29 |
