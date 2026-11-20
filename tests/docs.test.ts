@@ -186,7 +186,10 @@ test("readme-ends-with-the-license", () => {
 
 test("spec-describes-the-optional-follow", () => {
   const en = readFileSync(spec, "utf8");
-  assert.ok(en.includes("Definition version `2026-11-20`."), "spec/musubi.md does not name the definition version 2026-11-20");
+  assert.ok(
+    en.includes("Definition version `2026-11-20` added `follows.<ref>.optional`"),
+    "spec/musubi.md does not say that definition version 2026-11-20 added optional",
+  );
   assert.match(en, /^\| `follows\.<ref>\.optional` \| No \|/m, "spec/musubi.md has no row for optional");
   for (const line of [
     "When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.",
@@ -195,10 +198,41 @@ test("spec-describes-the-optional-follow", () => {
     for (const path of [spec, specJa]) assert.ok(readFileSync(path, "utf8").includes(line), `${path} does not show: ${line}`);
   }
   const ja = readFileSync(specJa, "utf8");
-  assert.ok(ja.includes("定義のバージョンは`2026-11-20`。"), "spec/musubi.ja.md does not name the definition version 2026-11-20");
+  assert.ok(
+    ja.includes("定義のバージョン`2026-11-20`で`follows.<参照>.optional`を加えた。"),
+    "spec/musubi.ja.md does not say that definition version 2026-11-20 added optional",
+  );
   assert.match(ja, /^\| `follows\.<参照>\.optional` \| いいえ \|/m, "spec/musubi.ja.md has no row for optional");
   assert.match(readFileSync(join(root, "GLOSSARY.md"), "utf8"), /^\| optional follow \|/m, "GLOSSARY.md does not define optional follow");
   assert.match(readFileSync(join(root, "GLOSSARY.ja.md"), "utf8"), /^\| 任意の準拠 \|/m, "GLOSSARY.ja.md does not define 任意の準拠");
+});
+
+test("spec-describes-installing", () => {
+  const en = readFileSync(spec, "utf8");
+  assert.ok(en.includes("Definition version `2026-11-21`."), "spec/musubi.md does not name the definition version 2026-11-21");
+  assert.ok(sections(spec).includes("Installing"), "spec/musubi.md has no Installing section");
+  assert.match(en, /^\| `follows\.<ref>\.when` \| No \|/m, "spec/musubi.md has no row for when");
+  assert.match(en, /^\| `musubi install /m, "spec/musubi.md has no row for musubi install");
+  const ja = readFileSync(specJa, "utf8");
+  assert.ok(ja.includes("定義のバージョンは`2026-11-21`。"), "spec/musubi.ja.md does not name the definition version 2026-11-21");
+  assert.ok(sections(specJa).includes("インストール"), "spec/musubi.ja.md has no インストール section");
+  assert.match(ja, /^\| `follows\.<参照>\.when` \| いいえ \|/m, "spec/musubi.ja.md has no row for when");
+  assert.match(ja, /^\| `musubi install /m, "spec/musubi.ja.md has no row for musubi install");
+  assert.match(readFileSync(join(root, "GLOSSARY.md"), "utf8"), /^\| condition \|/m, "GLOSSARY.md does not define condition");
+  assert.match(readFileSync(join(root, "GLOSSARY.md"), "utf8"), /^\| source \|/m, "GLOSSARY.md does not define source");
+  assert.match(readFileSync(join(root, "GLOSSARY.ja.md"), "utf8"), /^\| 条件 \|/m, "GLOSSARY.ja.md does not define 条件");
+  assert.match(readFileSync(join(root, "GLOSSARY.ja.md"), "utf8"), /^\| インストール元 \|/m, "GLOSSARY.ja.md does not define インストール元");
+});
+
+test("readme-shows-musubi-install", () => {
+  for (const readme of ["README.md", "README.ja.md"]) {
+    const text = readFileSync(join(root, readme), "utf8");
+    const blocks = [...text.matchAll(/```bash\n([\s\S]*?)```/g)].map((m) => m[1]);
+    assert.ok(
+      blocks.some((code) => /^musubi install \S+ --from \S+/m.test(code)),
+      `${readme} has no command block that runs musubi install with --from`,
+    );
+  }
 });
 
 test("publishing-doc-shows-the-manual-steps", () => {

@@ -326,3 +326,41 @@ test("check-refuses-optional-it-cannot-read", () => {
   const line2 = lineOf(wrong.json["api-design"], '"optional"');
   assert.ok(r2.stderr.includes(`api-design/musubi.json:${line2}: "optional" of "design-doc/design" must be true or false`), r2.stderr);
 });
+
+// The definition version that knows "when" on an optional follow (issue #38).
+const LANGUAGES = "2026-11-21";
+const when = (json: Record<string, unknown>, value: unknown, isOptional = true) => {
+  const follow = (json.follows as Record<string, Record<string, unknown>>)["design-doc/design"];
+  if (isOptional) follow.optional = true;
+  follow.when = value;
+  return json;
+};
+
+test("check-accepts-the-languages-of-an-optional-follow", () => {
+  const set = skills({
+    "design-doc": { provides: { design: { version: "1.0.0", file: "formats/design.md", text: formatText } } },
+    "api-design": { musubi: LANGUAGES, follows: { "design-doc/design": { range: "^1.0.0" } }, json: (j) => when(j, { languages: ["ja", "ja-JP"] }) },
+  });
+  const r = run(["check", "skills"], { cwd: set.dir });
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stdout, /musubi check: ok/, r.stdout);
+});
+
+test("check-refuses-when-it-cannot-read", () => {
+  // Each case: the definition version, the "when" value, whether the follow is optional, the key whose
+  // line is named, and the message.
+  const cases: Array<[string, unknown, boolean, string, string]> = [
+    [NEXT, { languages: ["ja"] }, true, '"when"', 'unknown field "when" in "design-doc/design"'],
+    [LANGUAGES, { languages: ["ja"] }, false, '"when"', '"when" of "design-doc/design" needs "optional": true'],
+    [LANGUAGES, { languages: ["Japanese language"] }, true, '"languages"', '"languages" of "design-doc/design" must list language tags such as "ja"'],
+    [LANGUAGES, { languages: [] }, true, '"languages"', '"languages" of "design-doc/design" must list language tags such as "ja"'],
+    [LANGUAGES, { region: "jp" }, true, '"when"', '"when" of "design-doc/design" must be an object with "languages"'],
+  ];
+  for (const [musubi, value, isOptional, key, message] of cases) {
+    const set = skills({ "api-design": { musubi, follows: { "design-doc/design": { range: "^1.0.0" } }, json: (j) => when(j, value, isOptional) } });
+    const r = run(["check", "skills"], { cwd: set.dir });
+    assert.equal(r.code, 1, r.stderr);
+    const expected = `api-design/musubi.json:${lineOf(set.json["api-design"], key)}: ${message}`;
+    assert.ok(r.stderr.includes(expected), `expected ${expected}\n${r.stderr}`);
+  }
+});

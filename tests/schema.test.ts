@@ -63,3 +63,33 @@ test("schema-accepts-an-optional-follow", () => {
   assert.equal(validateNext(follow("2026-11-20", "yes")), false);
   assert.equal(validator()(follow(DEF, true)), false, "the 2026-11-19 schema accepts optional");
 });
+
+// The schema of the definition version that knows "when" on an optional follow (issue #38).
+function languagesValidator() {
+  const path = join(root, "schema", "2026-11-21", "musubi.schema.json");
+  assert.ok(existsSync(path), "the schema is missing at schema/2026-11-21/musubi.schema.json");
+  return new Ajv2020({ allErrors: true, strict: false }).compile(JSON.parse(readFileSync(path, "utf8")));
+}
+const withWhen = (musubi: string, entry: Record<string, unknown>) => ({
+  musubi,
+  follows: { "design-doc/design": { version: "^1.0.0", integrity: `sha256-${"A".repeat(43)}=`, ...entry } },
+});
+
+test("schema-accepts-the-languages-of-an-optional-follow", () => {
+  const validate = languagesValidator();
+  assert.ok(validate(withWhen("2026-11-21", { optional: true, when: { languages: ["ja"] } })), JSON.stringify(validate.errors));
+  assert.ok(validate(withWhen("2026-11-21", { optional: true, when: { languages: ["ja-JP", "en"] } })), JSON.stringify(validate.errors));
+  assert.ok(validate(withWhen("2026-11-21", { optional: true })), JSON.stringify(validate.errors));
+});
+
+test("schema-refuses-when-it-cannot-read", () => {
+  const validate = languagesValidator();
+  assert.equal(validate(withWhen("2026-11-21", { when: { languages: ["ja"] } })), false, "when without optional passed");
+  assert.equal(validate(withWhen("2026-11-21", { optional: false, when: { languages: ["ja"] } })), false, "when with optional false passed");
+  assert.equal(validate(withWhen("2026-11-21", { optional: true, when: { languages: [] } })), false, "an empty languages passed");
+  assert.equal(validate(withWhen("2026-11-21", { optional: true, when: { languages: ["Japanese language"] } })), false, "a bad tag passed");
+  const older = new Ajv2020({ allErrors: true, strict: false }).compile(
+    JSON.parse(readFileSync(join(root, "schema", "2026-11-20", "musubi.schema.json"), "utf8")),
+  );
+  assert.equal(older(withWhen("2026-11-20", { optional: true, when: { languages: ["ja"] } })), false, "the 2026-11-20 schema accepts when");
+});

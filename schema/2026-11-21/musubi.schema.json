@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "musubi.schema.json",
+  "title": "musubi.json",
+  "description": "The musubi declaration next to a skill's SKILL.md: the content the skill provides and the content it follows.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["musubi"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Where editors find this schema."
+    },
+    "musubi": {
+      "const": "2026-11-21",
+      "description": "The date of the musubi definition this file follows."
+    },
+    "provides": {
+      "type": "object",
+      "description": "Content this skill provides, by name.",
+      "propertyNames": { "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+      "additionalProperties": { "$ref": "#/$defs/provided" }
+    },
+    "follows": {
+      "type": "object",
+      "description": "Content this skill follows, by <skill>/<content>.",
+      "propertyNames": { "pattern": "^[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$" },
+      "additionalProperties": { "$ref": "#/$defs/followed" }
+    }
+  },
+  "$defs": {
+    "provided": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "file"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "MAJOR.MINOR.PATCH. Raise MAJOR when a following skill can break.",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The content file, relative to the skill folder."
+        },
+        "check": {
+          "type": "string",
+          "pattern": "\\.json$",
+          "description": "A JSON rules file, relative to the skill folder, that musubi check applies to the examples of following skills."
+        }
+      }
+    },
+    "followed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "integrity"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "The versions this skill accepts: ^X.Y.Z, ~X.Y.Z, or X.Y.Z.",
+          "pattern": "^[\\^~]?(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "integrity": {
+          "type": "string",
+          "description": "The fingerprint of the content at the last check.",
+          "pattern": "^sha256-[A-Za-z0-9+/]{43}=$"
+        },
+        "examples": {
+          "type": "array",
+          "description": "Files of this skill that the provider's check is applied to.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "optional": {
+          "type": "boolean",
+          "description": "true when this skill also runs without the provider: it reads the content only when the provider is installed, and musubi check skips the follow when it is not."
+        },
+        "when": {
+          "type": "object",
+          "description": "When musubi install installs the provider of this optional follow without the user naming it: when a language the user gives with --lang has the same primary language as one of languages.",
+          "additionalProperties": false,
+          "required": ["languages"],
+          "properties": {
+            "languages": {
+              "type": "array",
+              "description": "Language tags such as ja or ja-JP.",
+              "minItems": 1,
+              "items": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$" }
+            }
+          }
+        }
+      },
+      "dependentSchemas": {
+        "when": { "required": ["optional"], "properties": { "optional": { "const": true } } }
+      }
+    }
+  }
+}

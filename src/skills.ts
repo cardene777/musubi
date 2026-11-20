@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import { definitionVersions, optionalVersions } from "./definition.ts";
+import { definitionVersions, optionalVersions, whenVersions } from "./definition.ts";
 import { INTEGRITY } from "./fingerprint.ts";
 import { isObject, JsonError, parseLocated, pointer } from "./json.ts";
 import type { Report } from "./report.ts";
@@ -10,7 +10,10 @@ import { parseRange, parseVersion, type Range, type Version } from "./semver.ts"
 export type Skill = { name: string; dir: string };
 
 // The folders the agents read skills from, in the project and in the home folder.
-const FOLDERS = [".claude/skills", ".agents/skills", ".github/skills", ".gemini/skills"];
+export const FOLDERS = [".claude/skills", ".agents/skills", ".github/skills", ".gemini/skills"];
+
+// A language tag such as ja or ja-JP, as an optional follow's "when" and --lang write it.
+export const LANGUAGE_TAG = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/;
 
 export function defaultRoots(cwd: string, home: string): string[] {
   return [cwd, home].flatMap((base) => FOLDERS.map((folder) => resolve(base, folder)));
@@ -56,6 +59,9 @@ export type Follow = {
   integrity: string | null;
   examples: string[];
   optional: boolean;
+  // The languages of "when": musubi install installs the provider of this optional follow when a
+  // language the user gives has the same primary language as one of them.
+  languages: string[];
   line: number;
   versionLine: number;
   integrityLine: number;
@@ -97,6 +103,24 @@ export function readDeclaration(skill: Skill, report: Report): Declaration | nul
   }
   const { value, lines } = located;
   const at = (...keys: string[]) => lines.get(pointer(...keys)) ?? 1;
+  // "when" of an optional follow holds one field, a list of language tags (decision record 0009).
+  const readWhen = (when: unknown, ref: string, optional: boolean): string[] => {
+    const line = at("follows", ref, "when");
+    if (!optional) report.problem(path, line, `"when" of "${ref}" needs "optional": true`);
+    if (!isObject(when) || when.languages === undefined) {
+      report.problem(path, line, `"when" of "${ref}" must be an object with "languages"`);
+      return [];
+    }
+    for (const key of Object.keys(when)) {
+      if (key !== "languages") report.problem(path, at("follows", ref, "when", key), `unknown field "${key}" in "when" of "${ref}"`);
+    }
+    const { languages } = when;
+    if (!Array.isArray(languages) || languages.length === 0 || !languages.every((tag) => typeof tag === "string" && LANGUAGE_TAG.test(tag))) {
+      report.problem(path, at("follows", ref, "when", "languages"), `"languages" of "${ref}" must list language tags such as "ja"`);
+      return [];
+    }
+    return languages;
+  };
   if (!isObject(value)) {
     report.problem(path, 1, "musubi.json holds one JSON object");
     return declaration;
@@ -157,12 +181,15 @@ export function readDeclaration(skill: Skill, report: Report): Declaration | nul
           continue;
         }
         const knowsOptional = typeof value.musubi === "string" && optionalVersions.has(value.musubi);
+        const knowsWhen = typeof value.musubi === "string" && whenVersions.has(value.musubi);
         for (const key of Object.keys(entry)) {
-          if (!FOLLOWED.has(key) && !(key === "optional" && knowsOptional)) report.problem(path, at("follows", ref, key), `unknown field "${key}" in "${ref}"`);
+          const known = FOLLOWED.has(key) || (key === "optional" && knowsOptional) || (key === "when" && knowsWhen);
+          if (!known) report.problem(path, at("follows", ref, key), `unknown field "${key}" in "${ref}"`);
         }
         if (knowsOptional && entry.optional !== undefined && typeof entry.optional !== "boolean") {
           report.problem(path, at("follows", ref, "optional"), `"optional" of "${ref}" must be true or false`);
         }
+        const languages = knowsWhen && entry.when !== undefined ? readWhen(entry.when, ref, entry.optional === true) : [];
         const versionLine = lines.get(pointer("follows", ref, "version")) ?? line;
         const range = typeof entry.version === "string" ? parseRange(entry.version) : null;
         if (!range) report.problem(path, versionLine, `the version range of "${ref}" must be ^X.Y.Z, ~X.Y.Z, or X.Y.Z`);
@@ -184,7 +211,7 @@ export function readDeclaration(skill: Skill, report: Report): Declaration | nul
         }
         const [skillName, content] = ref.split("/");
         const optional = knowsOptional && entry.optional === true;
-        declaration.follows.push({ ref, skill: skillName, content, range, integrity, examples, optional, line, versionLine, integrityLine });
+        declaration.follows.push({ ref, skill: skillName, content, range, integrity, examples, optional, languages, line, versionLine, integrityLine });
       }
     }
   }

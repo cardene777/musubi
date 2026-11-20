@@ -10,6 +10,8 @@
 | 例 | consumerが`musubi.json`で指定する、チェックを適用するファイル。consumer自身のテンプレートなどを指定する |
 | フィンガープリント | コンテンツのファイルとチェックとproviderの`SKILL.md`から求めた`sha256-<base64>`のハッシュ値。consumerがバージョンの範囲と並べて書く |
 | 任意の準拠 | providerが無くても動くconsumerが、`optional: true`を書いた準拠。providerがインストールされていない時、エージェントはそのコンテンツ無しで作業を続け、`musubi check`はその準拠を飛ばす |
+| 条件 | 任意の準拠の`when`のフィールド。`"when": { "languages": ["ja"] }`のように書き、利用者が`--lang`で渡した言語が合う時に、`musubi install`がその準拠のproviderをインストールする |
+| インストール元 | 利用者が`--from`で名指すフォルダかgitのリポジトリ。`musubi install`はその中からフォルダ名でスキルを探す |
 | バージョンの範囲 | consumerが受け入れるコンテンツのバージョンを、`^1.0.0`のようにsemverで書いた範囲 |
 | 定義のバージョン | `musubi.json`が準拠するmusubiの定義の日付。`"musubi": "2026-11-19"`の形で書く |
 | 登録 | このリポジトリの`registry/<owner>/<repo>.json`のファイル。管理者の1つのリポジトリのスキルのうち、サイトに載せるスキルのフォルダを並べる |

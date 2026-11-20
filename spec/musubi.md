@@ -1,6 +1,6 @@
 # The musubi definition
 
-Definition version `2026-11-20`.
+Definition version `2026-11-21`.
 
 musubi binds the content one agent skill provides, such as a document format or writing rules, to the skills that follow it.
 A skill declares that content under a name and a version, another skill declares that it follows it, agents load it the same way in every agent that reads `SKILL.md`, and the skills that follow it are checked again when it changes.
@@ -85,6 +85,7 @@ A consumer skill lists the content it follows under `follows` in `musubi.json`.
 | `follows.<ref>.integrity` | Yes | The fingerprint of the content at the last check |
 | `follows.<ref>.examples` | No | Files of the consumer that the provider's check is applied to |
 | `follows.<ref>.optional` | No | `true` when the consumer also works without the provider, described below |
+| `follows.<ref>.when` | No | Only with `optional: true`: the languages for which an installer installs the provider without being asked, described below and in Installing |
 
 The consumer's `SKILL.md` body carries three lines for each content it follows, which `musubi add` prints.
 
@@ -107,6 +108,23 @@ For an optional follow, `musubi add --optional` prints these three lines instead
 When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
 If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
 If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.
+```
+
+An optional follow may also name in `when` the languages for which the provider is installed together with the consumer, such as writing rules for users who write Japanese (decision record [0009](../docs/adr/0009-optional-follows-name-their-languages.md)).
+`languages` lists language tags, and `musubi add --optional --lang ja` writes them.
+
+```json
+{
+  "musubi": "2026-11-21",
+  "follows": {
+    "japanese-writing/rules": {
+      "version": "^1.0.0",
+      "integrity": "sha256-yNSwpBT+xXEV5bGBqedpHmjWIHVi+JaAnRATAJ0s7wM=",
+      "optional": true,
+      "when": { "languages": ["ja"] }
+    }
+  }
+}
 ```
 
 A consumer may add its own sections to the content it follows.
@@ -133,6 +151,41 @@ When two folders hold a skill of the same name, the first folder in that order w
 
 Agents read a content file whole, so `musubi check` warns when one is over 500 lines, the length Agent Skills suggests for `SKILL.md`.
 It does not refuse such content; a provider splits a long content into several.
+
+## Installing
+
+Installing a skill also installs the skills it follows, so that a consumer finds its providers in every agent, including agents without a field like Claude Code plugin `dependencies` (decision record [0008](../docs/adr/0008-install-follows-from-named-sources.md)).
+An installer, `musubi install` or another, reads the consumer's `musubi.json` and decides what to install the same way.
+
+1. It installs the provider of every required follow.
+2. It installs the provider of an optional follow only when the user names that provider, or when a language the user gives has the same primary language as a tag in the follow's `when.languages`, so `ja-JP` matches `ja`.
+3. It does the same for each skill it installs, down the whole chain.
+4. It keeps a skill that is already installed as it is, and still follows that skill's follows.
+5. When the provider of a required follow is in no source, provides no content of that name, or provides a version outside the consumer's range, it installs nothing and names the follow.
+6. After installing, it runs `musubi check`, as described in Re-checking.
+
+`musubi.json` never says where a skill comes from.
+The user names the sources, and the installer finds each skill in them by its name, the way agents open a provider by name.
+
+`musubi install` takes each source with `--from`: a folder, or a git repository URL that it clones with `git clone --depth 1` into a temporary folder and removes afterward.
+In a source, every folder that holds `SKILL.md` is a skill named by its folder, at any depth outside `.git` and `node_modules`, and the first source that holds a skill wins.
+A source that holds two skills of the same name is refused.
+It copies each skill folder whole into the folder named with `--to`, or, without `--to`, into the first of `.claude/skills`, `.agents/skills`, `.github/skills`, and `.gemini/skills` that exists in the current folder.
+A skill counts as installed when `musubi check` would find it: in that folder, or in the folders it reads without arguments.
+
+```bash
+musubi install api-design --from ../skills --to .claude/skills
+musubi install convey --from https://github.com/example/skills --lang ja --with design-doc
+```
+
+| Option | Means |
+|---|---|
+| `--from <folder or git URL>` | A source. Given more than once, the sources are searched in order |
+| `--to <skills folder>` | The folder to install into |
+| `--with <skill>` | Installs the provider of an optional follow by name. It may be given more than once |
+| `--lang <language tag>` | A language the user writes in, matched against `when.languages`. It may be given more than once |
+
+`musubi install` exits with `0` when everything was installed and `musubi check` passed, `1` when it installed nothing because of a problem or `musubi check` found one, and `2` when it was called the wrong way.
 
 ## Versions and fingerprints
 
@@ -170,6 +223,7 @@ The definition itself is versioned by date.
 Each `musubi.json` and each check file names the date it follows in `musubi`, and `musubi check` reads every date it knows and refuses the others.
 The dates it knows are the folders under `schema/`.
 Definition version `2026-11-20` added `follows.<ref>.optional`; a `musubi.json` that names `2026-11-19` still passes and may not use it.
+Definition version `2026-11-21` added `follows.<ref>.when`; a `musubi.json` that names `2026-11-20` still passes and may not use it.
 
 ## Re-checking
 
@@ -179,6 +233,7 @@ A consumer is checked again after a skill is installed, after a skill is updated
 
 - `musubi.json` is not valid JSON, has a field the definition does not know, or names a definition version it does not know
 - a version is not `MAJOR.MINOR.PATCH`, or a range is not one of the three forms
+- a follow has `when` without `optional: true`, or `when` holds anything but a list of language tags in `languages`
 - a file, check, or example path leaves the skill folder or names a missing file
 - a check is not a JSON rules file
 - a consumer follows a skill that is not installed (except in an optional follow), or a content that skill does not provide
@@ -229,17 +284,19 @@ A new kind of rule is added by a new definition version.
 
 | System | What it does | How musubi relates |
 |---|---|---|
-| Skill installers (APM, npx skills, skillpm, and others) | Install skills and their dependencies, and lock versions | They own where a skill comes from. `musubi.json` names only the skill, the content, and the version, so the source is written once |
-| Claude Code plugin `dependencies` | Install the plugins a plugin depends on | Same as installers. Agents without such a field rely on the stop line in the consumer's body |
+| Skill installers (APM, npx skills, skillpm, and others) | Install skills and their dependencies, and lock versions | They own where a skill comes from. `musubi.json` names only the skill, the content, and the version, so the source is written once. An installer that reads `musubi.json` installs the providers as described in Installing |
+| Claude Code plugin `dependencies` | Install the plugins a plugin depends on | Same as installers. In agents without such a field, `musubi install` installs the providers; when nothing installed them, the stop line in the consumer's body stops the agent |
 | Agent Skills | Defines `SKILL.md` and the skill folder | `SKILL.md` is unchanged and `musubi.json` is one more file in the folder. musubi is to be proposed to Agent Skills once it runs on real skills |
 | Agent Skills proposals for dependency files and lockfiles | Declare which skills a skill needs | They say which skill to install. musubi says which content of it a skill follows, at which version, and checks it again |
 
 ## The musubi command
 
 The command needs Node.js 22.18 or later and has no runtime dependencies.
+`musubi install` runs `git` only to clone a source given as a git URL.
 
 | Command | Does |
 |---|---|
 | `musubi check [<folder>...] [--update]` | Checks every `musubi.json` in the folders, as described in Re-checking |
-| `musubi add <skill>/<content> [<folder>...] [--optional]` | Run in a consumer's folder: writes the range `^<current version>` and the fingerprint into its `musubi.json`, keeps the fields already there, and prints the three lines for its `SKILL.md`. With `--optional` it also writes `optional: true`, moves `musubi` to the latest definition version when the file names one without `optional`, and prints the three lines for an optional follow |
+| `musubi add <skill>/<content> [<folder>...] [--optional [--lang <language>]...]` | Run in a consumer's folder: writes the range `^<current version>` and the fingerprint into its `musubi.json`, keeps the fields already there, and prints the three lines for its `SKILL.md`. With `--optional` it also writes `optional: true` and prints the three lines for an optional follow, and `--lang` writes `when.languages`. When the file names a definition version that does not know a field it writes, it moves `musubi` to the earliest definition version that does |
+| `musubi install <skill>... --from <source>... [--to <folder>] [--with <skill>]... [--lang <language>]...` | Installs the skills and the providers they follow, as described in Installing, then runs `musubi check` |
 | `musubi graph [<folder>...] [--out <file>]` | Writes one HTML page that draws each skill and an arrow to each content it follows |

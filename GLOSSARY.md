@@ -10,6 +10,8 @@
 | example | A file a consumer names in `musubi.json` for checks to run against, such as its own template |
 | fingerprint | A `sha256-<base64>` digest of a content's file, its check, and the provider's `SKILL.md`, which the consumer writes next to the version range |
 | optional follow | A follow with `optional: true`, written by a consumer that also works without the provider. When the provider is not installed, the agent goes on without the content and `musubi check` skips the follow |
+| condition | The `when` field of an optional follow, such as `"when": { "languages": ["ja"] }`. `musubi install` installs the provider of the follow when a language the user gives with `--lang` matches |
+| source | A folder or git repository that the user names with `--from`, in which `musubi install` finds a skill by its folder name |
 | version range | The semver range of content versions a consumer accepts, such as `^1.0.0` |
 | definition version | The date of the musubi definition a `musubi.json` follows, written as `"musubi": "2026-11-19"` |
 | registry entry | The file `registry/<owner>/<repo>.json` in this repository that lists the folders of one of the maintainers' repositories to show on the site |
