@@ -20,7 +20,7 @@ The list and skill pages of the site mark an optional follow.
 | Add `optional` to `2026-11-19` without a new date | musubi-cli 0.1.0 on npm would refuse the field as unknown without saying that a newer definition is needed |
 | The provider declares that its content is optional | Only the consumer knows whether it works without the provider |
 | `musubi check` fails when the provider of an optional follow is missing | Anyone who has not installed the provider would see `musubi check` fail for a skill that works without it |
-| Draw optional follows as dotted lines in `musubi graph` and on the site | The lines already move with dashes, which are hard to tell from dots; the mark on the list and skill pages tells them apart |
+| Draw optional follows as dotted lines in `musubi graph` and on the site | The lines are already drawn as moving dashes, which are hard to tell from dots; the mark on the list and skill pages tells them apart |
 
 ## Grounds
 
