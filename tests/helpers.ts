@@ -12,8 +12,9 @@ export const root = resolve(import.meta.dirname, "..");
 export const cli = join(root, "src", "cli.ts");
 export const DEF = "2026-11-19";
 // Words the Japanese text no longer uses: translations of terms the glossary keeps as loanwords or
-// in English, and the old names of provider, consumer, and content (issue #17).
-export const DROPPED_JA = ["版", "出す側", "使う側", "中身", "指紋", "頁", "写す", "検査", "命令", "組み立て", "従う"];
+// in English, the old names of provider, consumer, and content (issue #17), and 運営 for the person
+// who runs the site, who is the 管理者 (issue #27).
+export const DROPPED_JA = ["版", "出す側", "使う側", "中身", "指紋", "頁", "写す", "検査", "命令", "組み立て", "従う", "運営"];
 
 const made: string[] = [];
 after(() => {

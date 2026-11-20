@@ -402,7 +402,6 @@ const ICONS: Record<string, string> = {
     '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   pull: '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/>',
   book: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
-  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   pointer:
     '<path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/>',
 };
@@ -788,9 +787,6 @@ ${doc.html}
   };
 }
 
-// The skills are listed as found, so every page that shows them says nobody has reviewed them.
-const notice = (lang: Lang) => `<p class="notice" data-notice="unreviewed">${icon("info")}<span>${escape(TEXT[lang].unreviewed)}</span></p>`;
-
 function pager(lang: Lang, page: number, pages: number): string {
   const t = TEXT[lang];
   const item = (n: number) =>
@@ -825,7 +821,6 @@ function listPage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], page:
     .join("\n");
   const body = `<div class="wrap">
 <div class="page-title"><div><h1>${escape(t.skillsTitle)}</h1><p>${escape(fill(t.skillsSubtitle, { skills: skills.length, repos }))}</p></div><a class="button secondary" href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull")}${escape(t.howToRegister)}</a></div>
-${notice(lang)}
 ${pager(lang, page, pages)}
 <div class="table-scroll"><table class="skills">
 <thead><tr><th>${escape(t.colSkill)}</th><th>${escape(t.colProvides)}</th><th>${escape(t.colFollows)}</th><th>${escape(t.colFollowedBy)}</th></tr></thead>
@@ -897,7 +892,6 @@ function skillPage(o: Options, lang: Lang, skill: Skill, arrows: Link[]): Page {
 <div class="crumb"><a href="${at(lang, "/skills/")}">${escape(t.navSkills)}</a>${icon("right", 14)}<span>${escape(skill.name)}</span></div>
 <div class="title-row"><h1>${escape(skill.name)}</h1><span class="role ${role}">${escape(role === "provider" ? t.roleProvider : t.roleConsumer)}</span></div>
 ${skill.description ? `<p class="description">${escape(skill.description)}</p>` : ""}
-${notice(lang)}
 ${graph(lang, nodes, [...outgoing, ...incoming], skill)}
 <p class="hint">${icon("pointer", 15)}${escape(t.graphHint)}</p>
 </div>

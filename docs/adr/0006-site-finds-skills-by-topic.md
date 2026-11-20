@@ -29,3 +29,7 @@ The list and skill pages say that nobody has reviewed the content or the safety 
 ## Date
 
 2026-11-20
+
+## Reviewed
+
+On 2026-11-20, issue #27 removed the notice that nobody has reviewed the skills from the list and skill pages and from the READMEs, because the owner found it unnecessary.
