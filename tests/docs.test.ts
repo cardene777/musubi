@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
+import { TEXT } from "../site/text.ts";
 import { DROPPED_JA, root } from "./helpers.ts";
 
 // Lines outside fenced code blocks, so headings inside examples are not counted.
@@ -131,6 +132,55 @@ test("readme-shows-the-npm-install", () => {
     for (const command of ["npm install -g musubi-cli", "npx musubi-cli check"]) {
       assert.ok(text.includes(command), `${readme} does not show ${command}`);
     }
+  }
+});
+
+// The part of a README before its first section.
+function head(readme: string): string {
+  const text = readFileSync(join(root, readme), "utf8");
+  const at = text.search(/^## /m);
+  return at < 0 ? text : text.slice(0, at);
+}
+
+test("readme-opens-with-the-logo-badges-and-links", () => {
+  for (const [readme, lang, site, definition, other] of [
+    ["README.md", "en", "https://musubi.cardene.dev/", "spec/musubi.md", "README.ja.md"],
+    ["README.ja.md", "ja", "https://musubi.cardene.dev/ja/", "spec/musubi.ja.md", "README.md"],
+  ] as const) {
+    const top = head(readme);
+    const centered = [...top.matchAll(/<p align="center">([\s\S]*?)<\/p>/g)].map((m) => m[1]).join("\n");
+    assert.match(centered, /<img [^>]*src="site\/assets\/icon\.svg"/, `${readme} does not open with the logo`);
+    assert.match(top, /<h1 align="center">musubi<\/h1>/, `${readme} does not center the name`);
+    assert.ok(centered.includes(TEXT[lang].heroTitle), `${readme} does not say in one line what musubi does`);
+    for (const badge of ["https://img.shields.io/npm/v/musubi-cli", "https://img.shields.io/badge/license-MIT", "https://img.shields.io/node/v/musubi-cli"]) {
+      assert.ok(centered.includes(badge), `${readme} has no badge ${badge}`);
+    }
+    for (const link of [site, definition, other]) assert.ok(centered.includes(`href="${link}"`), `${readme} does not link ${link} at the top`);
+  }
+});
+
+test("readme-shows-the-binding-diagram", () => {
+  const path = join(root, "docs", "assets", "binding.svg");
+  assert.ok(existsSync(path), "docs/assets/binding.svg is missing");
+  const svg = readFileSync(path, "utf8");
+  assert.match(svg, /^<svg [^>]*viewBox="/, "docs/assets/binding.svg is not an SVG with a viewBox");
+  assert.match(svg, /^<svg [^>]*role="img"[^>]*aria-label="[^"]+"/, "the diagram does not say in text what it shows");
+  assert.match(svg, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.dot\s*\{\s*display:\s*none/, "the diagram keeps its moving dots when motion is reduced");
+  for (const readme of ["README.md", "README.ja.md"]) {
+    assert.match(head(readme), /<img [^>]*src="docs\/assets\/binding\.svg"[^>]*alt="[^"]+"/, `${readme} does not show the diagram at the top`);
+  }
+});
+
+test("readme-ends-with-the-license", () => {
+  for (const [readme, heading] of [
+    ["README.md", "License"],
+    ["README.ja.md", "ライセンス"],
+  ]) {
+    assert.equal(sections(join(root, readme)).at(-1), heading, `${readme} does not end with the ${heading} section`);
+    const text = readFileSync(join(root, readme), "utf8");
+    const body = text.slice(text.lastIndexOf(`## ${heading}`));
+    assert.match(body, /MIT/, `${readme} does not name the MIT license`);
+    assert.match(body, /\]\(LICENSE\)/, `${readme} does not link LICENSE`);
   }
 });
 
