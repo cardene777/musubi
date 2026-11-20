@@ -42,3 +42,13 @@
 | `docs/publishing.md`と`docs/publishing.ja.md`は、本人が画面で行うDNSのCNAMEと確認のTXTとGitHub Pagesの独自ドメインの設定と、公開の命令`pnpm site:publish`を示し、READMEがその文書へリンクする | `pnpm test`の検査`publishing-doc-shows-the-manual-steps`が通る | #13 |
 | 追跡するfileのうち、アカウントの名前を持つのは`LICENSE`と`package.json`と`registry/`と`design/`の下だけである | `pnpm test`の検査`account-name-only-in-license-and-package`が通る | #13 |
 | npmに出す包みは、`site/`の下のfileを持たない | `pnpm test`の検査`packed-files-leave-out-the-site`が通る | #13 |
+| 図の箱の中の名前と説明は、箱の左右の中央に置かれる | `pnpm test`の検査`graph-centers-the-text-in-each-box`が通る | #19 |
+| 箱から1本だけ出て曲がらずに届く線では、線の上の文字が線の左右の中央に置かれる | `pnpm test`の検査`graph-centers-a-label-over-a-straight-line`が通る | #19 |
+| 曲がる線では、線の上の文字が、曲がる前のまっすぐな区間の左右の中央に置かれる | `pnpm test`の検査`graph-centers-labels-on-the-straight-run`が通る | #19 |
+| 1つの箱に複数の線が入る時、線が箱に入る位置は上下に分かれ、2本の線が同じ点に入らない | `pnpm test`の検査`graph-spreads-arrows-into-one-box`が通る | #19 |
+| 各線は、線をたどって矢印の向きへ動く光の粒と尾を持ち、矢じりは線と同じ太さの「>」の形で、線は出る側の箱の縁の丸から出る | `pnpm test`の検査`graph-edges-carry-the-flowing-light`が通る | #19 |
+| 動きを減らす設定では、サイトのスキルのページと`musubi graph`のHTMLは、光の粒と尾と光る矢じりを表示しない | `pnpm test`の検査`graph-hides-the-light-when-motion-is-reduced`が通る | #19 |
+| 5つのスキルが1つのスキルに準拠する図と、1つのスキルが2つのスキルに準拠する図で、線の上の文字の枠に、どの線も入らない | `pnpm test`の検査`graph-labels-stay-clear-of-every-line`が通る | #19 |
+| 線は出る側の箱から文字の幅より長く真っすぐに出て、曲がり始めるのは文字の右端より先になる | `pnpm test`の検査`graph-edges-run-straight-under-their-labels`が通る | #19 |
+| `musubi graph`は、スキルごとの箱と準拠する先への線を書き出す | `pnpm test`の検査`graph-writes-the-skills-and-edges`が通る | #19 |
+| スキルのページは、準拠する先と準拠している先を両方挙げ、両方の線を描く | `pnpm test`の検査`site-skill-page-shows-both-directions`が通る | #19 |

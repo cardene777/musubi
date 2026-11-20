@@ -94,9 +94,14 @@ h1, h2, h3 { text-wrap: balance; }
 .graph .node .name { font-weight: 600; }
 .graph .node .detail { fill: var(--text-2); font: 11px "JetBrains Mono", monospace; }
 .graph .node a:hover rect { stroke: var(--accent); }
-.graph .edge path { fill: none; stroke: var(--text-muted); stroke-width: 1.5; }
+.graph .edge .line { fill: none; stroke: var(--text-muted); stroke-width: 1.5; stroke-linecap: round; }
+.graph .edge .tail { fill: none; stroke: var(--accent); stroke-linecap: round; }
+.graph .edge .dot { fill: #e6fbff; filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 6px var(--accent)); }
+[data-theme="light"] .graph .edge .dot { fill: var(--accent); }
+.graph .edge .chevron { fill: none; stroke: var(--text-muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.graph .edge .chevron.flash { stroke: var(--accent); opacity: 0; filter: drop-shadow(0 0 4px var(--accent)); }
+.graph .edge .port { fill: var(--bg-inset); stroke: var(--text-muted); stroke-width: 1.5; }
 .graph .edge text { fill: var(--text-2); font: 11px "JetBrains Mono", monospace; }
-.graph #arrow path { fill: var(--text-muted); }
 
 /* Home */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -316,4 +321,6 @@ a.frow:hover { text-decoration: none; background: var(--bg-tertiary); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .js .reveal { opacity: 1; transform: none; }
+  /* The light on the graph's lines is SVG animation, which the rule above does not stop. */
+  .graph .edge .tail, .graph .edge .dot, .graph .edge .flash { display: none; }
 }
