@@ -11,14 +11,21 @@ export const definitionVersions: readonly string[] = readdirSync(schemaDir)
 
 export const latestDefinition = definitionVersions[definitionVersions.length - 1];
 
-// The definition versions whose schema lets a follow say "optional" (decision record 0007), read
-// from the schemas so that no date is written in the code.
-export const optionalVersions: ReadonlySet<string> = new Set(
-  definitionVersions.filter((version) => {
-    const schema = JSON.parse(readFileSync(`${schemaDir}${version}/musubi.schema.json`, "utf8"));
-    return schema?.$defs?.followed?.properties?.optional !== undefined;
-  }),
-);
+// The definition versions whose schema lets a follow carry a field, read from the schemas so that
+// no date is written in the code.
+function versionsKnowing(field: string): ReadonlySet<string> {
+  return new Set(
+    definitionVersions.filter((version) => {
+      const schema = JSON.parse(readFileSync(`${schemaDir}${version}/musubi.schema.json`, "utf8"));
+      return schema?.$defs?.followed?.properties?.[field] !== undefined;
+    }),
+  );
+}
+
+// "optional" makes a follow optional (decision record 0007), and "when" names the languages for
+// which musubi install installs the provider of an optional follow (decision record 0009).
+export const optionalVersions = versionsKnowing("optional");
+export const whenVersions = versionsKnowing("when");
 
 // Agents read a content file whole; Agent Skills suggests keeping SKILL.md under this many lines.
 export const READ_LINES = 500;

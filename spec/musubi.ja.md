@@ -1,6 +1,6 @@
 # musubiの定義
 
-定義のバージョンは`2026-11-20`。
+定義のバージョンは`2026-11-21`。
 
 musubiは、文書の書式や書き方のルールのように、エージェントのスキルが提供するコンテンツと、そのコンテンツに準拠するスキルを結び付ける。
 あるスキルがコンテンツを名前とバージョン付きで宣言し、別のスキルがそのコンテンツに準拠すると宣言する。
@@ -87,6 +87,7 @@ consumerのスキルは、準拠するコンテンツを`musubi.json`の`follows
 | `follows.<参照>.integrity` | はい | 最後にチェックした時のコンテンツのフィンガープリント |
 | `follows.<参照>.examples` | いいえ | providerのチェックを適用する、consumerのファイル |
 | `follows.<参照>.optional` | いいえ | providerが無くてもconsumerが動く時に`true`を書く。下で定める |
+| `follows.<参照>.when` | いいえ | `optional: true`の時だけ書ける。利用者が名指さなくてもインストーラーがproviderをインストールする言語を書く。下とインストールの節で定める |
 
 consumerの`SKILL.md`の本文には、準拠するコンテンツごとに次の3行を書く。
 この3行は`musubi add`が出力する。
@@ -112,6 +113,24 @@ providerのスキルがインストールされていなくても動くconsumer�
 When the `design-doc` skill is installed, write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
 If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
 If the `design-doc` skill is not installed, go on without the `design` of `design-doc`.
+```
+
+任意の準拠は、consumerと一緒にproviderをインストールする言語を`when`に書いてもよい。
+たとえば、日本語で書く利用者にだけ書き方のルールをインストールする時に使う (判断の記録[0009](../docs/adr/0009-optional-follows-name-their-languages.ja.md))。
+`languages`には言語タグを並べ、`musubi add --optional --lang ja`がこれを書く。
+
+```json
+{
+  "musubi": "2026-11-21",
+  "follows": {
+    "japanese-writing/rules": {
+      "version": "^1.0.0",
+      "integrity": "sha256-yNSwpBT+xXEV5bGBqedpHmjWIHVi+JaAnRATAJ0s7wM=",
+      "optional": true,
+      "when": { "languages": ["ja"] }
+    }
+  }
+}
 ```
 
 consumerは、準拠するコンテンツに自分の節を追加できる。
@@ -141,6 +160,48 @@ Claude Code、Codex、GitHub Copilot CLI、Gemini CLIはどれもインストー
 500行は、Agent Skillsが`SKILL.md`に勧める長さである。
 そのようなコンテンツも拒否はしない。
 長いコンテンツは、providerが複数のコンテンツに分ける。
+
+## インストール
+
+スキルをインストールする時は、そのスキルが準拠するスキルもインストールする。
+そうすれば、Claude Codeのプラグインの`dependencies`のようなフィールドを持たないエージェントでも、consumerはproviderを見つけられる (判断の記録[0008](../docs/adr/0008-install-follows-from-named-sources.ja.md))。
+`musubi install`もほかのインストーラーも、consumerの`musubi.json`を読み、次の同じ決まりでインストールするスキルを決める。
+
+1. 必須の準拠のproviderは全てインストールする。
+2. 任意の準拠のproviderは、利用者がそのproviderを名指した時か、利用者が渡した言語の主な言語が準拠の`when.languages`のタグと同じ時だけインストールする。たとえば`ja-JP`は`ja`に合う。
+3. インストールしたスキルごとに同じことを繰り返し、準拠の連鎖の最後まで辿る。
+4. インストール済みのスキルはそのまま残し、そのスキルの準拠は辿る。
+5. 必須の準拠のproviderがどのインストール元にも無い時と、その名前のコンテンツを提供しない時と、consumerの範囲の外のバージョンを提供する時は、何もインストールせず、その準拠を示す。
+6. インストールした後に、再チェックの節のとおり`musubi check`を実行する。
+
+`musubi.json`には、スキルのインストール元を書かない。
+インストール元は利用者が名指し、インストーラーはその中から名前でスキルを探す。
+エージェントがproviderを名前で開くのと同じ方法である。
+
+`musubi install`は、インストール元を`--from`で受け取る。
+インストール元はフォルダか、gitのリポジトリのURLである。
+URLの時は`git clone --depth 1`で一時フォルダへクローンし、終わった後に消す。
+インストール元の中で`SKILL.md`を持つフォルダは、`.git`と`node_modules`の中を除き、どの深さにあってもスキルで、スキルの名前はフォルダの名前である。
+同じスキルを持つインストール元が複数ある時は、先に名指したインストール元を使う。
+同じ名前のスキルを2つ持つインストール元は拒否する。
+スキルのフォルダは丸ごと`--to`で指定したフォルダへコピーする。
+`--to`が無い時は、カレントフォルダの`.claude/skills`、`.agents/skills`、`.github/skills`、`.gemini/skills`のうち、最初にあるフォルダへコピーする。
+`musubi check`が見つけるスキルは、インストール済みとして扱う。
+つまり、コピー先のフォルダと、引数の無い`musubi check`が読むフォルダにあるスキルである。
+
+```bash
+musubi install api-design --from ../skills --to .claude/skills
+musubi install convey --from https://github.com/example/skills --lang ja --with design-doc
+```
+
+| オプション | 意味 |
+|---|---|
+| `--from <フォルダかgitのURL>` | インストール元。複数指定すると、指定した順に探す |
+| `--to <スキルのフォルダ>` | インストールするフォルダ |
+| `--with <スキル名>` | 任意の準拠のproviderを名前で指定してインストールする。複数指定できる |
+| `--lang <言語タグ>` | 利用者が書く言語。`when.languages`と照らし合わせる。複数指定できる |
+
+`musubi install`の終了コードは、全てをインストールして`musubi check`が通った時は`0`、問題があって何もインストールしなかった時か`musubi check`が問題を見つけた時は`1`、コマンドの呼び出し方が間違っている時は`2`である。
 
 ## バージョンとフィンガープリント
 
@@ -181,6 +242,8 @@ integrity = "sha256-" + base64(sha256 digest)
 知っている日付は、`schema/`の下にあるフォルダの名前である。
 定義のバージョン`2026-11-20`で`follows.<参照>.optional`を加えた。
 `2026-11-19`を書いた`musubi.json`は今も通り、`optional`は書けない。
+定義のバージョン`2026-11-21`で`follows.<参照>.when`を加えた。
+`2026-11-20`を書いた`musubi.json`は今も通り、`when`は書けない。
 
 ## 再チェック
 
@@ -191,6 +254,7 @@ consumerは、スキルをインストールした後と、スキルを更新し
 
 - `musubi.json`がJSONとして正しくない、定義にないフィールドを持つ、知らない定義のバージョンを指定している
 - バージョンが`MAJOR.MINOR.PATCH`の形でない、範囲が3つの形のどれでもない
+- 準拠が`optional: true`無しで`when`を持つ、`when`が`languages`の言語タグの一覧以外を持つ
 - ファイル、チェック、例のパスがスキルのフォルダの外へ出るか、存在しないファイルを指している
 - チェックがJSONのルールのファイルでない
 - consumerが、インストールされていないスキル (任意の準拠を除く) か、そのスキルが提供していないコンテンツに準拠している
@@ -245,17 +309,19 @@ providerのコードは実行しない (判断の記録[0004](../docs/adr/0004-c
 
 | 仕組み | すること | musubiとの関係 |
 |---|---|---|
-| スキルのインストーラー (APM、npx skills、skillpmなど) | スキルとその依存をインストールし、バージョンを固定する | スキルの入手先はインストーラーが管理する。`musubi.json`はスキルとコンテンツとバージョンだけを書くので、入手先を書くのは1か所で済む |
-| Claude Codeのプラグインの`dependencies` | プラグインが依存するプラグインをインストールする | インストーラーと同じ。このようなフィールドを持たないエージェントでは、consumerの本文にある作業を止める1行に頼る |
+| スキルのインストーラー (APM、npx skills、skillpmなど) | スキルとその依存をインストールし、バージョンを固定する | スキルのインストール元はインストーラーが管理する。`musubi.json`はスキルとコンテンツとバージョンだけを書くので、インストール元を書くのは1か所で済む。`musubi.json`を読むインストーラーは、インストールの節のとおりにproviderをインストールする |
+| Claude Codeのプラグインの`dependencies` | プラグインが依存するプラグインをインストールする | インストーラーと同じ。このようなフィールドを持たないエージェントでは、`musubi install`がproviderをインストールする。何もインストールしなかった時は、consumerの本文にある作業を止める1行がエージェントを止める |
 | Agent Skills | `SKILL.md`とスキルのフォルダを定める | `SKILL.md`は変えず、フォルダの中に`musubi.json`が1つ増えるだけである。musubiは実際のスキルで動くようになった後に、Agent Skillsへ提案する |
 | Agent Skillsの依存ファイルとロックファイルの提案 | スキルが必要とするスキルを宣言する | これらはどのスキルをインストールするかを書く。musubiは、そのスキルのどのコンテンツにどのバージョンで準拠するかを書き、再チェックする |
 
 ## musubiコマンド
 
 コマンドはNode.js 22.18以降で動き、実行時の依存を持たない。
+`musubi install`は、gitのURLで指定したインストール元をクローンする時だけ`git`を実行する。
 
 | コマンド | すること |
 |---|---|
 | `musubi check [<フォルダ>...] [--update]` | フォルダの中の全ての`musubi.json`を、再チェックの節のとおりにチェックする |
-| `musubi add <スキル名>/<名前> [<フォルダ>...] [--optional]` | consumerのフォルダで実行する。`musubi.json`に範囲`^<今のバージョン>`とフィンガープリントを書き込み、既にあるフィールドは残し、`SKILL.md`に置く3行を出力する。`--optional`を付けると`optional: true`も書き、`musubi`が`optional`を持たない定義のバージョンなら最新の定義のバージョンに上げ、任意の準拠の3行を出力する |
+| `musubi add <スキル名>/<名前> [<フォルダ>...] [--optional [--lang <言語タグ>]...]` | consumerのフォルダで実行する。`musubi.json`に範囲`^<今のバージョン>`とフィンガープリントを書き込み、既にあるフィールドは残し、`SKILL.md`に置く3行を出力する。`--optional`を付けると`optional: true`も書いて任意の準拠の3行を出力し、`--lang`を付けると`when.languages`を書く。書くフィールドを`musubi`の定義のバージョンが持たない時は、そのフィールドを持つ最も古い定義のバージョンに上げる |
+| `musubi install <スキル名>... --from <インストール元>... [--to <フォルダ>] [--with <スキル名>]... [--lang <言語タグ>]...` | スキルと、そのスキルが準拠するproviderを、インストールの節のとおりにインストールし、`musubi check`を実行する |
 | `musubi graph [<フォルダ>...] [--out <ファイル>]` | 各スキルと、準拠するコンテンツへの矢印を描いたHTMLのページを1つ書き出す |

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "check.schema.json",
+  "title": "musubi check rules",
+  "description": "The rules a provider skill's check holds. musubi check reads them and never runs provider code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["musubi", "rules"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "musubi": { "const": "2026-11-21" },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "headings"],
+            "properties": {
+              "kind": { "const": "headings" },
+              "headings": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Heading lines that must appear, in this order. Other headings may come between them.",
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "text"],
+            "properties": {
+              "kind": { "const": "forbid" },
+              "text": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Text that must not remain outside code blocks.",
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "heading", "columns"],
+            "properties": {
+              "kind": { "const": "table-columns" },
+              "heading": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The heading line whose first table is checked."
+              },
+              "columns": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Columns the table must have. It may have more.",
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

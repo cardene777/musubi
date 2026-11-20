@@ -66,6 +66,8 @@ consumerの`SKILL.md`の本文は、`design-doc`のスキルを名前で開い�
 そのため、エージェントは新しい仕組みがなくてもコンテンツを読み込めます。
 providerが無くても動くconsumerは、定義のバージョン`2026-11-20`を書き、準拠に`"optional": true`を足します。
 するとエージェントは、providerがインストールされていない時にそのコンテンツ無しで作業を続けます。
+定義のバージョン`2026-11-21`では、さらに`"when": { "languages": ["ja"] }`を足せます。
+足すと、`musubi install --lang ja`がconsumerと一緒にproviderもインストールします。
 2つのスキルは[examples/skills](examples/skills)にあります。
 
 ## チェック
@@ -90,6 +92,20 @@ pnpm install
 node src/cli.ts check examples/skills
 node src/cli.ts graph examples/skills --out graph.html
 ```
+
+## 準拠するスキルと一緒にインストールする
+
+`musubi install`は、スキルと、その`musubi.json`が準拠するスキルを、`--from`で名指したフォルダかgitのリポジトリからまとめてインストールします。
+
+```bash
+musubi install convey --from https://github.com/example/skills --to .claude/skills --lang ja
+```
+
+インストール元の中からフォルダ名でスキルを探し、そのフォルダを`--to`へコピーします。
+`--to`が無い時は、カレントフォルダの`.claude/skills`、`.agents/skills`、`.github/skills`、`.gemini/skills`のうち最初に在るフォルダを使います。
+必須の準拠のproviderは必ずインストールします。
+任意の準拠のproviderは、`--with <スキル名>`で名指した時か、準拠が`when`に利用者の言語を書いていて、その言語を`--lang`で渡した時にインストールします。
+インストール済みのスキルはそのまま残し、最後に`musubi check`を実行します。
 
 ## サイトにスキルを載せる
 

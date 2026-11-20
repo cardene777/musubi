@@ -10,7 +10,7 @@
 `when`が持つフィールドは`languages`の1つで、`ja`のような言語タグを並べる。
 `musubi install --lang <言語タグ>`は、`languages`に主な言語が同じタグを持つ任意の準拠ごとに、そのproviderをインストールする。
 たとえば`--lang ja-JP`は`ja`に合う。
-`musubi add <参照> --optional --lang <言語タグ>`は`when`を書き、`musubi add`は書くフィールドを知っている最も古い定義のバージョンへ`musubi`を上げる。
+`musubi add <参照> --optional --lang <言語タグ>`は`when`を書き、`musubi add`は書くフィールドを持つ最も古い定義のバージョンへ`musubi`を上げる。
 `2026-11-20`を書いた`musubi.json`は今も通り、その中の`when`は知らないフィールドとして拒否する。
 
 ## 却下した案

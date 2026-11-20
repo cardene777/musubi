@@ -60,6 +60,7 @@ A consumer lists the content it follows, the versions it accepts, and the finger
 
 The consumer's `SKILL.md` body tells the agent to open the `design-doc` skill by name and read its `design` format, so agents need nothing new to load it.
 A consumer that also works without the provider names definition version `2026-11-20` and adds `"optional": true` to the follow; the agent then goes on without the content when the provider is not installed.
+With definition version `2026-11-21` it can also add `"when": { "languages": ["ja"] }`, so that `musubi install --lang ja` installs the provider with it.
 [examples/skills](examples/skills) holds both skills.
 
 ## Checking
@@ -84,6 +85,20 @@ pnpm install
 node src/cli.ts check examples/skills
 node src/cli.ts graph examples/skills --out graph.html
 ```
+
+## Installing a skill with the skills it follows
+
+`musubi install` installs a skill together with the skills its `musubi.json` follows, from a folder or a git repository you name with `--from`.
+
+```bash
+musubi install convey --from https://github.com/example/skills --to .claude/skills --lang ja
+```
+
+It finds each skill in the source by its folder name and copies the folder into `--to`.
+Without `--to` it uses the first of `.claude/skills`, `.agents/skills`, `.github/skills`, and `.gemini/skills` in the current folder.
+The provider of a required follow is always installed.
+The provider of an optional follow is installed when you name it with `--with <skill>`, or when the follow lists your language in `when` and you give it with `--lang`.
+Skills already installed are kept as they are, and `musubi check` runs at the end.
 
 ## Listing a skill on the site
 

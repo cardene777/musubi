@@ -6,7 +6,7 @@
 | `AGENTS.md`、`CLAUDE.md` | 人とエージェントが従う決まり | `AGENTS.md` |
 | `spec/` | 定義の文書 (英語が正、日本語が訳) | `spec/musubi.md` |
 | `schema/<日付>/` | 定義の版ごとの`musubi.json`と検査のfileのJSON Schema。命令が読む定義の版はこのフォルダの名前だけが持つ | `src/definition.ts` |
-| `src/` | `musubi`の命令 (`check`、`add`、`graph`) | `package.json` |
+| `src/` | `musubi`の命令 (`check`、`add`、`install`、`graph`) | `package.json` |
 | `tests/` | `node --test`のテスト | `package.json` |
 | `examples/skills/` | 出す側1つと使う側1つの例のスキル。サイトのトップページの仕組みの節は、この2つの宣言と、組み立ての時に写しで回した`musubi check`の出力を載せる | `spec/musubi.md`、`site/build.ts` |
 | `registry/<持ち主>/<repo>.json` | サイトに見せる管理者のスキルのフォルダを、repoごとに1つのfileで並べた登録。ほかのスキルはトピック`musubi-skills`の検索で見つける | `docs/adr/0006-site-finds-skills-by-topic.md` |

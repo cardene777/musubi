@@ -11,7 +11,7 @@ The definition is decided in this repository's issues, and the `musubi` command 
 ```
 spec/                 The definition, English (normative) and Japanese
 schema/<date>/        JSON Schemas of musubi.json and check files, one folder per definition version
-src/                  The musubi command: check, add, graph
+src/                  The musubi command: check, add, install, graph
 tests/                Tests run with node --test
 examples/skills/      One provider skill and one consumer skill
 registry/             registry/<owner>/<repo>.json lists the maintainers' skill folders the site shows, one file per repository; registry/excluded.json names what the site leaves out
