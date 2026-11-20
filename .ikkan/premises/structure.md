@@ -8,10 +8,10 @@
 | `schema/<日付>/` | 定義の版ごとの`musubi.json`と検査のfileのJSON Schema。命令が読む定義の版はこのフォルダの名前だけが持つ | `src/definition.ts` |
 | `src/` | `musubi`の命令 (`check`、`add`、`graph`) | `package.json` |
 | `tests/` | `node --test`のテスト | `package.json` |
-| `examples/skills/` | 出す側1つと使う側1つの例のスキル | `spec/musubi.md` |
+| `examples/skills/` | 出す側1つと使う側1つの例のスキル。サイトのトップページの仕組みの節は、この2つの宣言と、組み立ての時に写しで回した`musubi check`の出力を載せる | `spec/musubi.md`、`site/build.ts` |
 | `registry/<持ち主>/<repo>.json` | サイトに見せるスキルのフォルダを、repoごとに1つのfileで並べた登録 | `docs/adr/0005-registry-lists-skill-folders.md` |
-| `site/` | サイトを組み立てる`build.ts`と、手元で配る`serve.ts`。頁は`site/dist/`へ書き、npmへは出さない | `package.json` |
-| `design/site.pen` | Pencilで描いたサイトの画面 | `AGENTS.md` |
+| `site/` | サイトを組み立てる`build.ts`と、手元で配る`serve.ts`。頁は`site/dist/`へ書き、npmへは出さない。`site/assets/`のタブのアイコンとホーム画面のアイコンと共有の絵は、組み立てが`site/dist/assets/`へ写す | `package.json` |
+| `design/` | Pencilで描いたサイトの画面 (`site.pen`) と、`site/assets/`の絵の元 (共有の絵の`og.html`、ホーム画面のアイコンの`apple-touch-icon.svg`) | `AGENTS.md` |
 | `GLOSSARY.md`、`GLOSSARY.ja.md` | 定義が使う語 | `GLOSSARY.md` |
 | `docs/adr/` | 戻すのが高くつく判断の記録 | `docs/adr/` |
 | `.ikkan/` | ikkanの記録。配らない | `AGENTS.md` |
