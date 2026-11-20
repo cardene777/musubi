@@ -320,6 +320,35 @@ test("site-pages-share-one-stylesheet", () => {
   }
 });
 
+test("site-defaults-to-the-public-url", () => {
+  const dir = fixture();
+  const out = join(dir, "public");
+  const r = spawnSync(process.execPath, [build, "--registry", join(dir, "registry"), "--source", join(dir, "source"), "--out", out], {
+    cwd: dir,
+    encoding: "utf8",
+  });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const PUBLIC = "https://musubi.cardene.dev";
+  for (const path of [".", "ja", "spec"]) {
+    const html = page(out, path);
+    const canonical = href(tags(html, "link", /rel="canonical"/)[0] ?? "", "href");
+    assert.ok(canonical.startsWith(`${PUBLIC}/`), `${path}: the canonical URL ${canonical} does not start with ${PUBLIC}/`);
+    const share = href(tags(html, "meta", /property="og:image"/)[0] ?? "", "content");
+    assert.ok(share.startsWith(`${PUBLIC}/`), `${path}: og:image ${share} does not start with ${PUBLIC}/`);
+  }
+  const locs = [...readFileSync(join(out, "sitemap.xml"), "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  assert.ok(locs.length > 0, "sitemap.xml lists no page");
+  for (const loc of locs) assert.ok(loc.startsWith(`${PUBLIC}/`), `sitemap.xml lists ${loc}, which does not start with ${PUBLIC}/`);
+});
+
+test("site-writes-the-pages-files", () => {
+  const { out } = built();
+  assert.ok(existsSync(join(out, "CNAME")), "CNAME was not written");
+  assert.equal(readFileSync(join(out, "CNAME"), "utf8"), "musubi.example\n", "CNAME does not hold the host of the base URL");
+  assert.ok(existsSync(join(out, ".nojekyll")), ".nojekyll was not written");
+  assert.equal(readFileSync(join(out, ".nojekyll"), "utf8"), "", ".nojekyll is not empty");
+});
+
 test("registry-entries-are-well-formed", () => {
   const registry = join(root, "registry");
   assert.ok(existsSync(registry), "registry/ is missing");

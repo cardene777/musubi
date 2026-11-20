@@ -126,3 +126,19 @@ test("readme-shows-the-npm-install", () => {
     }
   }
 });
+
+test("publishing-doc-shows-the-manual-steps", () => {
+  for (const [doc, readme] of [
+    ["docs/publishing.md", "README.md"],
+    ["docs/publishing.ja.md", "README.ja.md"],
+  ]) {
+    assert.ok(existsSync(join(root, doc)), `${doc} is missing`);
+    const text = readFileSync(join(root, doc), "utf8");
+    for (const part of ["pnpm site:publish", "musubi.cardene.dev", "CNAME", "TXT", "gh-pages"]) {
+      assert.ok(text.includes(part), `${doc} does not show ${part}`);
+    }
+    assert.ok(readFileSync(join(root, readme), "utf8").includes(`](${doc})`), `${readme} does not link ${doc}`);
+  }
+  const scripts = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts ?? {};
+  assert.equal(scripts["site:publish"], "node site/publish.ts", "package.json has no site:publish script that runs site/publish.ts");
+});
