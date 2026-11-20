@@ -26,8 +26,64 @@ const LABEL_INSET = 12;
 const LABEL_RISE = 8;
 const LABEL_STEP = 15;
 const BEND_ROOM = 96;
+// A line leaves its box from a small round port and ends in a ">" head just left of the box it points to.
+const PORT_R = 3.5;
+const HEAD_GAP = 3;
+const HEAD_LEN = 7;
+const HEAD_HALF = 5.5;
+// Lines into one box arrive this far apart, kept this far inside the box's top and bottom.
+const ENTRY_GAP = 12;
+const ENTRY_MARGIN = 10;
+// The light runs along each line once a loop. Its trail is three strokes, measured in hundredths of
+// the line, so every line takes the same time from end to end. The light travels for TRAVEL of the
+// loop, reaches the head at ARRIVE, and the head lights up as it arrives.
+const LOOP = "2.4s";
+const TAILS: Array<[number, number, number]> = [
+  [26, 5, 0.14],
+  [15, 3, 0.4],
+  [6, 2.2, 0.95],
+];
+const TRAVEL = 0.8;
+const REACH = 100 + TAILS[0][0];
+const ARRIVE = (TRAVEL * 100) / REACH;
 
 const labelWidth = (label: string) => Math.ceil(label.length * LABEL_CHAR);
+const num = (value: number) => String(Math.round(value * 100) / 100);
+const times = (...values: number[]) => values.map((v) => String(Math.round(v * 1000) / 1000)).join(";");
+
+// Ids of the lines, so the light can follow them. The prefix comes from the edges, so two graphs on
+// one page do not share ids and the same graph always gets the same ids.
+function idPrefix(edges: GraphEdge[]): string {
+  let hash = 0x811c9dc5;
+  for (const char of edges.map((e) => e.key).join("\n")) {
+    hash ^= char.codePointAt(0) as number;
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return `musubi-${hash.toString(36)}`;
+}
+
+// The line, its moving light, its head, and its port. The line comes first, so readers of the SVG
+// that take an edge's first path get the line.
+function edgeLight(id: string, d: string, start: [number, number], tip: [number, number]): string {
+  const loop = `dur="${LOOP}" repeatCount="indefinite"`;
+  const tails = TAILS.map(
+    ([length, width, opacity]) =>
+      `<path class="tail" d="${d}" pathLength="100" stroke-width="${width}" opacity="${opacity}" stroke-dasharray="${length} 300">` +
+      `<animate attributeName="stroke-dashoffset" values="${length};${length - REACH};${length - REACH}" keyTimes="${times(0, TRAVEL, 1)}" ${loop}/></path>`,
+  ).join("");
+  const [tx, ty] = tip;
+  const head = `M${num(tx - HEAD_LEN)},${num(ty - HEAD_HALF)} L${num(tx)},${num(ty)} L${num(tx - HEAD_LEN)},${num(ty + HEAD_HALF)}`;
+  const flash = `<animate attributeName="opacity" values="0;0;1;0;0" keyTimes="${times(0, ARRIVE - 0.035, ARRIVE + 0.015, ARRIVE + 0.225, 1)}" ${loop}/>`;
+  return [
+    `<path class="line" id="${id}" d="${d}"/>`,
+    tails,
+    `<path class="chevron" d="${head}"/>`,
+    `<path class="chevron flash" d="${head}">${flash}</path>`,
+    `<circle class="dot" r="3"><animateMotion ${loop} calcMode="linear" keyPoints="0;1;1" keyTimes="${times(0, ARRIVE, 1)}"><mpath href="#${id}"/></animateMotion>`,
+    `<animate attributeName="opacity" values="1;1;0;0" keyTimes="${times(0, ARRIVE, ARRIVE + 0.025, 1)}" ${loop}/></circle>`,
+    `<circle class="port" cx="${num(start[0])}" cy="${num(start[1])}" r="${PORT_R}"/>`,
+  ].join("");
+}
 
 // Draws each node as a box and each edge as an arrow from the follower to the provider, as one SVG.
 // A node's column is the length of the longest chain of nodes that follow it, so providers sit to the
@@ -76,23 +132,47 @@ export function graphSvg(nodes: GraphNode[], edges: GraphEdge[]): { svg: string;
   const x = (p: { column: number }) => PAD + p.column * (NODE_W + gap);
   const y = (p: { column: number; row: number }) => head + top(p.column) + p.row * (NODE_H + GAP_Y);
 
+  // Lines into one box arrive at different heights, in the order of the boxes they come from, so their
+  // heads do not sit on one point and the lines do not cross on the way in.
+  const middle = (id: string) => y(placed.get(id) as { column: number; row: number }) + NODE_H / 2;
+  const entry = new Map<GraphEdge, number>();
+  for (const to of new Set(drawn.map((e) => e.to))) {
+    const into = drawn.filter((e) => e.to === to).sort((a, b) => middle(a.from) - middle(b.from) || drawn.indexOf(a) - drawn.indexOf(b));
+    const step = into.length > 1 ? Math.min(ENTRY_GAP, (NODE_H - 2 * ENTRY_MARGIN) / (into.length - 1)) : 0;
+    into.forEach((e, i) => entry.set(e, (i - (into.length - 1) / 2) * step));
+  }
+
+  const prefix = idPrefix(drawn);
   const seen = new Map<string, number>();
   const edgeSvg = drawn
-    .map((e) => {
+    .map((e, i) => {
       const a = placed.get(e.from) as { column: number; row: number };
       const b = placed.get(e.to) as { column: number; row: number };
       const x1 = x(a) + NODE_W;
       const y1 = y(a) + NODE_H / 2;
+      const sx = x1 + PORT_R;
       const xs = x1 + (run.get(a.column) as number);
-      const x2 = x(b) - 6;
-      const y2 = y(b) + NODE_H / 2;
-      const bend = (x2 - xs) / 2;
+      const tip = x(b) - HEAD_GAP;
+      const x2 = tip - 0.5;
+      const y2 = y(b) + NODE_H / 2 + (entry.get(e) as number);
       const k = seen.get(e.from) ?? 0;
       seen.set(e.from, k + 1);
+      const straight = Math.abs(y1 - y2) < 0.01;
+      // A box's only line, when it does not bend, carries its label over its middle. Every other label
+      // sits over the straight run its box's lines share, before any of them bends.
+      const alone = straight && (stack.get(e.from) as number) === 1;
+      const mid = (xs + x2) / 2;
+      const d = alone
+        ? `M${num(sx)},${num(y1)} H${num(x2)}`
+        : straight
+          ? `M${num(sx)},${num(y1)} H${num(xs)} H${num(x2)}`
+          : `M${num(sx)},${num(y1)} H${num(xs)} C${num(mid)},${num(y1)} ${num(mid)},${num(y2)} ${num(x2)},${num(y2)}`;
+      const centre = alone ? (sx + x2) / 2 : (sx + xs) / 2;
+      const labelW = labelWidth(e.label);
       return [
         `<g class="edge" data-edge="${attribute(e.key)}">`,
-        `<path d="M${x1},${y1} H${xs} C${xs + bend},${y1} ${x2 - bend},${y2} ${x2},${y2}" marker-end="url(#arrow)"/>`,
-        `<text class="label" x="${x1 + LABEL_INSET}" y="${y1 - LABEL_RISE - k * LABEL_STEP}" font-size="${LABEL_SIZE}" textLength="${labelWidth(e.label)}" lengthAdjust="spacingAndGlyphs">${escape(e.label)}</text>`,
+        edgeLight(`${prefix}-${i}`, d, [x1, y1], [tip, y2]),
+        `<text class="label" x="${num(centre - labelW / 2)}" y="${num(y1 - LABEL_RISE - k * LABEL_STEP)}" font-size="${LABEL_SIZE}" textLength="${labelW}" lengthAdjust="spacingAndGlyphs">${escape(e.label)}</text>`,
         "</g>",
       ].join("");
     })
@@ -101,19 +181,20 @@ export function graphSvg(nodes: GraphNode[], edges: GraphEdge[]): { svg: string;
     .map((p) => {
       const n = p.node;
       const classes = ["node", n.missing ? "missing" : "", n.current ? "current" : ""].filter(Boolean).join(" ");
+      const cx = num(x(p) + NODE_W / 2);
       const box = [
         `<rect x="${x(p)}" y="${y(p)}" width="${NODE_W}" height="${NODE_H}" rx="10"/>`,
-        `<text class="name" x="${x(p) + 14}" y="${y(p) + 26}">${escape(n.name)}</text>`,
-        `<text class="detail" x="${x(p) + 14}" y="${y(p) + 46}">${escape(n.detail)}</text>`,
+        `<text class="name" x="${cx}" y="${num(y(p) + 22)}" text-anchor="middle" dominant-baseline="central">${escape(n.name)}</text>`,
+        `<text class="detail" x="${cx}" y="${num(y(p) + 43)}" text-anchor="middle" dominant-baseline="central">${escape(n.detail)}</text>`,
       ].join("");
       const inner = n.href ? `<a href="${attribute(n.href)}">${box}</a>` : box;
       return `<g class="${classes}" data-skill="${attribute(n.id)}">${inner}</g>`;
     })
     .join("\n");
+  // Lines come after the boxes, so the half of each port that sits over a box's edge stays visible.
   const svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Skill dependency graph">
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
-${edgeSvg}
 ${nodeSvg}
+${edgeSvg}
 </svg>`;
   return { svg, width, height };
 }
@@ -168,9 +249,14 @@ svg text { fill: var(--fg); font: 13px system-ui, sans-serif; }
 .node.missing rect { stroke: #c0503a; stroke-dasharray: 5 4; }
 .node .name { font-weight: 600; font-size: 14px; }
 .node .detail { fill: var(--muted); font-size: 12px; }
-.edge path { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.edge .line { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-linecap: round; }
+.edge .tail { fill: none; stroke: var(--accent); stroke-linecap: round; }
+.edge .dot { fill: var(--accent); filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 5px var(--accent)); }
+.edge .chevron { fill: none; stroke: var(--line); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.edge .chevron.flash { stroke: var(--accent); opacity: 0; filter: drop-shadow(0 0 4px var(--accent)); }
+.edge .port { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
 .edge text { fill: var(--muted); font: 11px ui-monospace, "JetBrains Mono", Menlo, monospace; }
-#arrow path { fill: var(--line); }
+@media (prefers-reduced-motion: reduce) { .edge .tail, .edge .dot, .edge .flash { display: none; } }
 table { border-collapse: collapse; margin-top: 20px; }
 th, td { text-align: left; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--line); }
 </style>
