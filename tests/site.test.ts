@@ -3,7 +3,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
-import { root, skillMd, tree } from "./helpers.ts";
+import { TEXT } from "../site/text.ts";
+import { DROPPED_JA, root, skillMd, tree } from "./helpers.ts";
 
 const build = join(root, "site", "build.ts");
 const BASE = "https://musubi.example";
@@ -347,6 +348,27 @@ test("site-writes-the-pages-files", () => {
   assert.equal(readFileSync(join(out, "CNAME"), "utf8"), "musubi.example\n", "CNAME does not hold the host of the base URL");
   assert.ok(existsSync(join(out, ".nojekyll")), ".nojekyll was not written");
   assert.equal(readFileSync(join(out, ".nojekyll"), "utf8"), "", ".nojekyll is not empty");
+});
+
+test("site-ja-text-uses-the-glossary-terms", () => {
+  const strings = Object.entries(TEXT.ja).flatMap(([key, text]) =>
+    DROPPED_JA.filter((word) => text.includes(word)).map((word) => `TEXT.ja.${key}: ${word}: ${text}`),
+  );
+  assert.deepEqual(strings, [], "the Japanese strings use words the glossary replaced");
+  const { out } = built();
+  const visible = (html: string) =>
+    html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ");
+  for (const path of ["ja", "ja/spec", "ja/skills", "ja/skills/alice/skills-a/design-doc"]) {
+    const html = page(out, path);
+    for (const heading of html.matchAll(/<h([1-3])\b[^>]*>([\s\S]*?)<\/h\1>/g)) {
+      const text = heading[2].replace(/<[^>]+>/g, "");
+      assert.ok(!text.includes("、"), `/${path}/ has a heading with 、: ${text}`);
+    }
+    if (path !== "ja/spec") {
+      const words = DROPPED_JA.filter((word) => visible(html).includes(word));
+      assert.deepEqual(words, [], `/${path}/ shows words the glossary replaced`);
+    }
+  }
 });
 
 test("registry-entries-are-well-formed", () => {

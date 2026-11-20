@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { test } from "node:test";
-import { root } from "./helpers.ts";
+import { DROPPED_JA, root } from "./helpers.ts";
 
 // Lines outside fenced code blocks, so headings inside examples are not counted.
 function prose(text: string): string[] {
@@ -64,7 +64,14 @@ test("spec-has-the-six-sections", () => {
     assert.ok(english.includes(name), `spec/musubi.md has no section ${name}`);
   }
   const japanese = sections(specJa);
-  for (const name of ["出す側の宣言", "使う側の宣言", "見つけ方と読み込み方", "版と指紋", "確かめ直し方", "既にある仕組みとの関係"]) {
+  for (const name of [
+    "providerの宣言",
+    "consumerの宣言",
+    "見つけ方と読み込み方",
+    "バージョンとフィンガープリント",
+    "再チェック",
+    "既存の仕組みとの関係",
+  ]) {
     assert.ok(japanese.includes(name), `spec/musubi.ja.md has no section ${name}`);
   }
 });
@@ -74,7 +81,7 @@ test("spec-lists-the-rule-kinds", () => {
   const text = readFileSync(spec, "utf8");
   assert.ok(sections(spec).includes("Check rules"), "spec/musubi.md has no section Check rules");
   for (const kind of ["`headings`", "`forbid`", "`table-columns`"]) assert.ok(text.includes(kind), `no rule kind ${kind}`);
-  assert.ok(sections(specJa).includes("検査の決まり"), "spec/musubi.ja.md has no section 検査の決まり");
+  assert.ok(sections(specJa).includes("チェックのルール"), "spec/musubi.ja.md has no section チェックのルール");
 });
 
 test("doc-pairs-have-the-same-shape", () => {
@@ -141,4 +148,36 @@ test("publishing-doc-shows-the-manual-steps", () => {
   }
   const scripts = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts ?? {};
   assert.equal(scripts["site:publish"], "node site/publish.ts", "package.json has no site:publish script that runs site/publish.ts");
+});
+
+// The Japanese counterpart of every English document the shape test reads.
+const japaneseDocs = () => englishDocs().map((path) => path.replace(/\.md$/, ".ja.md")).filter((path) => existsSync(path));
+// Lines outside fenced blocks with inline code taken out, so code, keys, and commands are not read.
+const plain = (path: string) => prose(readFileSync(path, "utf8")).map((line) => line.replace(/`[^`]*`/g, ""));
+
+test("ja-doc-headings-have-no-comma", () => {
+  const docs = japaneseDocs();
+  assert.ok(docs.length > 0);
+  const found = docs.flatMap((path) =>
+    plain(path)
+      .filter((line) => /^#{1,6} /.test(line) && line.includes("、"))
+      .map((line) => `${relative(root, path)}: ${line}`),
+  );
+  assert.deepEqual(found, [], "Japanese headings have 、");
+});
+
+test("ja-docs-use-the-glossary-terms", () => {
+  const found = japaneseDocs().flatMap((path) =>
+    plain(path).flatMap((line) => DROPPED_JA.filter((word) => line.includes(word)).map((word) => `${relative(root, path)}: ${word}: ${line.trim()}`)),
+  );
+  assert.deepEqual(found, [], "Japanese documents use words the glossary replaced");
+});
+
+test("glossary-names-the-chosen-terms", () => {
+  const terms = prose(readFileSync(join(root, "GLOSSARY.ja.md"), "utf8"))
+    .filter((line) => /^\| /.test(line) && !/^\|[-:| ]+\|$/.test(line))
+    .map((line) => line.split("|")[1].trim().replace(/`/g, ""));
+  for (const term of ["provider", "consumer", "コンテンツ", "フィンガープリント", "チェック", "バージョンの範囲", "定義のバージョン"]) {
+    assert.ok(terms.includes(term), `GLOSSARY.ja.md does not define ${term}`);
+  }
 });

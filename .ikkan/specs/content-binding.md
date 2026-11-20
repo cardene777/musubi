@@ -2,7 +2,7 @@
 
 | 条件 | 確かめ方 | 出元 |
 |---|---|---|
-| `spec/musubi.md`と`spec/musubi.ja.md`を開いた時、出す側の宣言、使う側の宣言、見つけ方と読み込み方、版と指紋、確かめ直し方、既にある仕組みとの関係の6つの節が在る | `node --test tests/docs.test.ts`の検査`spec-has-the-six-sections`が通る | #3 |
+| `spec/musubi.md`と`spec/musubi.ja.md`を開いた時、providerの宣言、consumerの宣言、見つけ方と読み込み方、バージョンとフィンガープリント、再チェック、既存の仕組みとの関係の6つの節が在る | `node --test tests/docs.test.ts`の検査`spec-has-the-six-sections`が通る | #3 |
 | 定義の文書を開いた時、検査に書ける決まりの種類 (要る見出しとその順、残してはいけない文字、表の要る列) を書いた節が在る | `node --test tests/docs.test.ts`の検査`spec-lists-the-rule-kinds`が通る | #3 |
 | 常に、英語の文書と日本語の対`<name>.ja.md`は同じ数の見出しと表と例を持つ | `node --test tests/docs.test.ts`の検査`doc-pairs-have-the-same-shape`が通る | #3 |
 | `README.md`と`README.ja.md`を開いた時、定義の文書へのリンクと、出す側と使う側の`musubi.json`の例が在る | `node --test tests/docs.test.ts`の検査`readme-links-the-spec-and-shows-the-example`が通る | #3 |
