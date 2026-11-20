@@ -5,7 +5,21 @@
 // listed skill's musubi.json and SKILL.md from GitHub (or from --source/<owner>/<repo>/<folder>), and
 // writes the English pages at / and the Japanese pages at /ja/, with sitemap.xml, robots.txt, and llms.txt.
 // A listed folder whose musubi.json cannot be read is named on stderr and left out of the site.
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import {
+  appendFileSync,
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { basename, join, posix, resolve } from "node:path";
 import { latestDefinition } from "../src/definition.ts";
 import { type GraphEdge, type GraphNode, graphSvg } from "../src/graph.ts";
@@ -224,11 +238,21 @@ const ICONS: Record<string, string> = {
   folder:
     '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   pull: '<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/>',
+  book: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
   pointer:
     '<path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/>',
 };
 const icon = (name: string, size = 16) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+
+// The header mark is the tab icon drawn inline, with its two colors taken from the theme.
+const logo = readFileSync(join(root, "site", "assets", "icon.svg"), "utf8")
+  .trim()
+  .replace('<svg xmlns="http://www.w3.org/2000/svg"', '<svg class="logo" width="26" height="26" aria-hidden="true"')
+  .replace('stroke="#22D3EE"', 'class="provider"')
+  .replace('stroke="#A78BFA"', 'class="follower"')
+  .replace('fill="#22D3EE" stroke="none"', 'class="knot"');
+if (!/class="provider"[\s\S]*class="follower"[\s\S]*class="knot"/.test(logo)) throw new Error("site/assets/icon.svg no longer has the colors the header logo replaces");
 
 const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
 
@@ -268,17 +292,24 @@ function layout(o: Options, page: Page): string {
 <meta property="og:description" content="${escape(page.description)}">
 <meta property="og:url" content="${url(page.lang)}">
 <meta property="og:locale" content="${page.lang === "en" ? "en_US" : "ja_JP"}">
+<meta property="og:image" content="${o.base}/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1a1d24">
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="/assets/site.css">
-<script>try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
+<script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
 <script type="application/ld+json">${json({ "@context": "https://schema.org", ...page.ld })}</script>
 </head>
 <body>
 <header class="header"><div class="wrap">
 <div class="left">
-<a class="brand" href="${at(page.lang, "/")}">${icon("link", 22)}musubi</a>
+<a class="brand" href="${at(page.lang, "/")}">${logo}musubi</a>
 <nav class="nav">${navLink("definition", "navDefinition", "/spec/")}${navLink("skills", "navSkills", "/skills/")}<a href="${repoUrl}">GitHub</a></nav>
 </div>
 <div class="right">
@@ -295,7 +326,7 @@ ${page.body}
 </div></footer>
 <script>
 document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
-document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){if(navigator.clipboard)navigator.clipboard.writeText(b.getAttribute("data-copy"))})});
+document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){if(navigator.clipboard)navigator.clipboard.writeText(b.getAttribute("data-copy")).catch(function(){});b.classList.add("done");setTimeout(function(){b.classList.remove("done")},1200)})});
 </script>
 </body>
 </html>
@@ -325,37 +356,216 @@ function graph(lang: Lang, nodes: Skill[], arrows: Link[], current?: Skill): str
   return `<div class="graph">${graphSvg(graphNodes, edges).svg}</div>`;
 }
 
-function homePage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], example: { file: string; text: string }): Page {
+// The hero draws one provider and the registered skills that follow it, and the motion raises the
+// provider's version and checks each follower again. The provider is the one most skills follow.
+type Figure = {
+  provider: { id: string; name: string; href: string | null; provides: Provided[] };
+  followers: Array<{ id: string; name: string; href: string | null }>;
+  more: number;
+  cord: string;
+  bump: string;
+};
+const FIGURE_FOLLOWERS = 5;
+const LIST_ROWS = 6;
+const examples = join(root, "examples", "skills");
+const exampleJson = (name: string) => readFileSync(join(examples, name, "musubi.json"), "utf8");
+const nextMinor = (version: string) => {
+  const m = /^(\d+)\.(\d+)\.\d+/.exec(version);
+  return m ? `${m[1]}.${Number(m[2]) + 1}.0` : "";
+};
+
+function figure(lang: Lang, skills: Skill[], arrows: Link[]): Figure {
+  const byProvider = new Map<Skill, Link[]>();
+  for (const a of arrows) if (a.to && a.to.provides.length > 0) byProvider.set(a.to, [...(byProvider.get(a.to) ?? []), a]);
+  let best: [Skill, Link[]] | undefined;
+  for (const entry of byProvider) if (!best || entry[1].length > best[1].length) best = entry;
+  if (best) {
+    const [provider, followed] = best;
+    const labels = new Set(followed.map(label));
+    return {
+      provider: { id: provider.id, name: provider.name, href: at(lang, skillPath(provider)), provides: provider.provides },
+      followers: followed.slice(0, FIGURE_FOLLOWERS).map((l) => ({ id: l.from.id, name: l.from.name, href: at(lang, skillPath(l.from)) })),
+      more: Math.max(0, followed.length - FIGURE_FOLLOWERS),
+      cord: labels.size === 1 ? [...labels][0] : provider.name,
+      bump: followed[0].follows[0].content,
+    };
+  }
+  // With no registered skill following another, the hero draws the two skills under examples/.
+  const entry: Entry = { owner: "examples", repo: "skills", file: "examples/skills", skills: [] };
+  const provider = readSkill(entry, "design-doc", exampleJson("design-doc"), "") as Skill;
+  const follower = readSkill(entry, "api-design", exampleJson("api-design"), "") as Skill;
+  const [link] = links([provider, follower]);
+  return {
+    provider: { id: provider.id, name: provider.name, href: null, provides: provider.provides },
+    followers: [{ id: follower.id, name: follower.name, href: null }],
+    more: 0,
+    cord: label(link),
+    bump: link.follows[0].content,
+  };
+}
+
+const STATUS =
+  '<svg class="tick" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg>' +
+  '<svg class="spin" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/></svg>';
+
+function figureHtml(lang: Lang, f: Figure): string {
+  const t = TEXT[lang];
+  const box = (href: string | null, cls: string, inner: string, attrs = "") =>
+    href ? `<a class="${cls}" href="${href}"${attrs}>${inner}</a>` : `<div class="${cls}"${attrs}>${inner}</div>`;
+  const rows = f.provider.provides
+    .map((p) => {
+      const next = p.name === f.bump ? nextMinor(p.version) : "";
+      const badge = next ? `<span class="badge">${escape(t.changed)}</span>` : "";
+      return `<div class="prow"${next ? ` data-bump="${escape(next)}"` : ""}><span class="flash"></span><span class="c">${escape(p.name)}</span><span class="v">${escape(p.version)}</span>${badge}<span class="f">${escape(p.file)}</span></div>`;
+    })
+    .join("");
+  const followers = f.followers
+    .map((s, i) =>
+      box(s.href, "frow", `<span class="bar"></span><span class="st">${STATUS}</span><span class="n">${escape(s.name)}</span><span class="s">${escape(t.checked)}</span>`, ` style="--i:${i}" data-follower="${escape(s.id)}"`),
+    )
+    .join("");
+  const more = f.more > 0 ? box(f.provider.href, "frow more", escape(fill(t.moreFollowers, { n: f.more })), ` style="--i:${f.followers.length}"`) : "";
+  return `<figure class="binding" data-motion data-checking="${escape(t.checking)}" data-checked="${escape(t.checked)}">
+<div class="card provider draw" style="--d:500" data-provider="${escape(f.provider.id)}">${box(f.provider.href, "head", `<span class="name">${escape(f.provider.name)}</span><span class="chip provides">provides</span>`)}${rows}</div>
+<div class="cord" aria-hidden="true"><span class="line"></span><span class="pulse"></span><span class="label">${icon("link", 14)}follows ${escape(f.cord)}</span></div>
+<div class="card followers">${followers}${more}</div>
+<figcaption class="sr">${escape(fill(t.bindingCaption, { provider: f.provider.name, n: f.followers.length + f.more }))}</figcaption>
+</figure>`;
+}
+
+// A declaration under examples/ shown as code: the provided content or followed reference in a color,
+// the other keys brighter than the values, and a fingerprint cut short so the line fits the column.
+function declaration(name: string, key: "provides" | "follows", mark: string): string {
+  const value = JSON.parse(exampleJson(name))[key] as Record<string, unknown>;
+  const text = `"${key}": ${JSON.stringify(value, null, 2)}`.replace(/"(sha256-[A-Za-z0-9+/]{4})[A-Za-z0-9+/=]+"/g, '"$1…"');
+  const names = new Set(Object.keys(value).map((k) => JSON.stringify(k)));
+  return text.replace(/("(?:[^"\\]|\\.)*")(\s*:)?|([^"]+)/g, (_, str: string | undefined, colon: string | undefined, other: string | undefined) => {
+    if (other !== undefined) return escape(other);
+    if (colon) return `<span class="${names.has(str as string) ? mark : "key"}">${escape(str as string)}</span>${colon}`;
+    return escape(str as string);
+  });
+}
+
+// What musubi check prints for the skills under examples/ after their provider's content changes, and
+// after --update. The build runs the command on a copy, so the page shows the command's own words.
+function transcript(): Array<{ kind: string; text: string }> {
+  const dir = mkdtempSync(join(tmpdir(), "musubi-site-"));
+  try {
+    cpSync(examples, join(dir, "skills"), { recursive: true });
+    appendFileSync(join(dir, "skills", "design-doc", "formats", "design.md"), "\n- One more rule.\n");
+    const run = (args: string[]) => {
+      const result = spawnSync(process.execPath, [join(root, "src", "cli.ts"), "check", "skills", ...args], { cwd: dir, encoding: "utf8" });
+      return `${result.stderr}${result.stdout}`
+        .split("\n")
+        .filter((line) => line !== "" && !line.startsWith("(node:"))
+        .map((text) => ({ kind: !text.startsWith("musubi check:") ? "out" : / ok /.test(text) ? "ok" : "err", text }));
+    };
+    return [
+      { kind: "cmd", text: "$ musubi check skills" },
+      ...run([]),
+      { kind: "cmd", text: "$ musubi check skills --update" },
+      ...run(["--update"]),
+    ];
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+const COMMANDS = [
+  { tool: "npm", command: "npm install -g musubi-cli" },
+  { tool: "pnpm", command: "pnpm add -g musubi-cli" },
+  { tool: "npx", command: "npx musubi-cli check skills" },
+];
+
+// Runs the hero's motion, the install tabs, and the sections that rise into view. Without script,
+// or with reduced motion asked for, every part is shown at rest.
+const HOME_SCRIPT = `<script>
+(function(){
+var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+var tabs=[].slice.call(document.querySelectorAll(".tabs [data-cmd]")),cmd=document.querySelector(".install .t"),copy=document.querySelector(".install .copy");
+tabs.forEach(function(b){b.addEventListener("click",function(){tabs.forEach(function(x){x.setAttribute("aria-selected",String(x===b))});cmd.textContent=b.dataset.cmd;copy.setAttribute("data-copy",b.dataset.cmd)})});
+var term=document.querySelector(".term");
+function count(el){var n=+el.dataset.count,t0=performance.now();function step(t){var p=Math.min(1,(t-t0)/900);el.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+function type(){var lines=[].slice.call(term.children).map(function(s){return[s.className,s.textContent]}),i=0;term.style.minHeight=term.offsetHeight+"px";term.textContent="";
+function next(){if(i>=lines.length){var c=document.createElement("span");c.className="caret";term.appendChild(c);return}var l=lines[i++],s=document.createElement("span"),isCmd=l[0]==="line-cmd",j=0;s.className=l[0];term.appendChild(s);
+(function ch(){s.textContent=l[1].slice(0,++j);if(j<l[1].length)setTimeout(ch,isCmd?34:4);else{term.appendChild(document.createTextNode("\\n"));setTimeout(next,isCmd?360:120)}})()}next()}
+var io=!reduce&&"IntersectionObserver" in window?new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;var el=e.target;el.classList.add("in");io.unobserve(el);if(el.contains(term))setTimeout(type,400);el.querySelectorAll("[data-count]").forEach(count)})},{threshold:.2}):null;
+document.querySelectorAll(".reveal").forEach(function(el){io?io.observe(el):el.classList.add("in")});
+var fig=document.querySelector(".binding"),hero=document.querySelector(".hero"),bump=fig.querySelector("[data-bump]");
+if(reduce||!bump)return;
+var rows=[].slice.call(fig.querySelectorAll("[data-follower]")),pulse=fig.querySelector(".pulse"),cord=fig.querySelector(".cord"),ver=bump.querySelector(".v"),before=ver.textContent,after=bump.dataset.bump;
+function status(r,cls,text){r.classList.remove("checking","rechecked");if(cls)r.classList.add(cls);r.querySelector(".s").textContent=text}
+function story(){if(document.hidden)return setTimeout(story,1000);
+rows.forEach(function(r){status(r,"",fig.dataset.checked)});bump.classList.remove("changed");ver.textContent=before;
+setTimeout(function(){bump.classList.add("changed");ver.textContent=after},900);
+setTimeout(function(){pulse.animate([{top:"0px",opacity:0},{opacity:1,offset:.15},{opacity:1,offset:.85},{top:(cord.offsetHeight-10)+"px",opacity:0}],{duration:800,easing:"cubic-bezier(.4,0,.2,1)"})},1700);
+rows.forEach(function(r,i){setTimeout(function(){status(r,"checking",fig.dataset.checking)},2500+i*260);setTimeout(function(){status(r,"rechecked",fig.dataset.checked)},3400+i*260)});
+setTimeout(function(){bump.classList.remove("changed")},6400);setTimeout(story,8200)}
+setTimeout(function(){hero.classList.remove("motion");story()},3000);
+})();
+</script>`;
+
+function homePage(o: Options, lang: Lang, skills: Skill[], arrows: Link[], lines: Array<{ kind: string; text: string }>): Page {
   const t = TEXT[lang];
   const repos = new Set(skills.map((s) => `${s.owner}/${s.repo}`)).size;
   const follows = arrows.reduce((n, a) => n + a.follows.length, 0);
+  const tabs = COMMANDS.map(
+    (c, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-cmd="${escape(c.command)}">${escape(c.tool)}</button>`,
+  ).join("");
+  const step = (n: number, title: string, body: string, head: string, code: string, cls = "") =>
+    `<li class="step" data-step="${n}"><span class="num">0${n}</span><h3>${escape(title)}</h3><p>${escape(body)}</p><div class="code"><div class="ch">${escape(head)}</div><pre${cls ? ` class="${cls}"` : ""}>${code}</pre></div></li>`;
+  const row = (i: number, s: Skill, detail: string, right: string) =>
+    `<a class="irow" href="${at(lang, skillPath(s))}"><span class="i">${String(i + 1).padStart(2, "0")}</span><span class="t"><b>${escape(s.name)}</b><span>${escape(detail)}</span></span>${right ? `<span class="r">${escape(right)}</span>` : ""}</a>`;
+  const providers = skills
+    .filter((s) => s.provides.length > 0)
+    .map((s) => ({ s, n: arrows.filter((a) => a.to === s).length }))
+    .sort((a, b) => b.n - a.n || a.s.name.localeCompare(b.s.name))
+    .slice(0, LIST_ROWS)
+    .map(({ s, n }, i) => row(i, s, s.provides.map((p) => `${p.name} ${p.version}`).join(", "), fill(t.followedByCount, { n })))
+    .join("");
+  const consumers = skills
+    .filter((s) => s.follows.length > 0)
+    .slice(0, LIST_ROWS)
+    .map((s, i) => row(i, s, s.follows.map((f) => `${f.ref} ${f.range}`).join(", "), ""))
+    .join("");
+  const stat = (n: number, text: string) => `<div><strong data-count="${n}">${n}</strong><span>${escape(text)}</span></div>`;
   const body = `<div class="wrap">
-<section class="hero">
+<section class="hero" data-home="hero">
 <div>
-<p class="eyebrow">${escape(t.eyebrow)}</p>
-<h1>${escape(t.heroTitle)}</h1>
-<p class="lead">${escape(t.heroLead)}</p>
-<div class="actions"><a class="button primary" href="${at(lang, "/spec/")}">${escape(t.readDefinition)}${icon("arrow")}</a><a class="button secondary" href="${at(lang, "/skills/")}">${escape(t.browseSkills)}</a></div>
-<div class="install"><span class="muted">$</span><span>npm install -g musubi-cli</span><button class="button-copy" type="button" data-copy="npm install -g musubi-cli" aria-label="${escape(t.copy)}">${icon("copy", 15)}</button></div>
+<p class="eyebrow draw" style="--d:0">${escape(t.eyebrow)}</p>
+<h1 class="draw" style="--d:80">${escape(t.heroTitle).replace(/[^、]+、?/g, (part) => `<span class="phrase">${part}</span>`)}</h1>
+<p class="lead draw" style="--d:200">${escape(t.heroLead)}</p>
+<div class="install draw" style="--d:300"><div class="tabs" role="tablist" aria-label="${escape(t.installLabel)}">${tabs}</div><div class="cmd"><span class="p">$</span><code class="t">${escape(COMMANDS[0].command)}</code><button class="copy" type="button" data-copy="${escape(COMMANDS[0].command)}" aria-label="${escape(t.copy)}">${icon("copy")}</button></div></div>
+<div class="actions draw" style="--d:380"><a class="button primary" href="${at(lang, "/spec/")}">${escape(t.readDefinition)}${icon("arrow")}</a><a class="button secondary" href="${at(lang, "/skills/")}">${escape(t.browseSkills)}</a></div>
 </div>
-<div class="example"><header><span class="file">${escape(example.file)}</span><span class="kind">follows</span></header><pre><code>${escape(example.text.trim())}</code></pre></div>
+${figureHtml(lang, figure(lang, skills, arrows))}
+</section>
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.querySelector(".hero").classList.add("motion")</script>
+<section class="how reveal" data-home="how">
+<div class="sec-head"><p class="eyebrow">${escape(t.howEyebrow)}</p><h2>${escape(t.howHeading)}</h2></div>
+<ol class="steps">
+${step(1, t.step1Title, t.step1Body, "design-doc/musubi.json", declaration("design-doc", "provides", "k"))}
+${step(2, t.step2Title, t.step2Body, "api-design/musubi.json", declaration("api-design", "follows", "k2"))}
+${step(3, t.step3Title, t.step3Body, t.terminal, lines.map((l) => `<span class="line-${l.kind}">${escape(l.text)}</span>`).join("\n"), "term")}
+</ol>
 </section>
 ${
   skills.length > 0
-    ? `<section class="registered">
-${graph(lang, skills, arrows.filter((a) => a.to))}
-<div>
-<p class="eyebrow">${escape(t.registeredEyebrow)}</p>
-<h2>${escape(t.registeredHeading)}</h2>
-<p>${escape(t.registeredBody)}</p>
-<div class="stats"><div><strong>${skills.length}</strong><span>${escape(t.statSkills)}</span></div><div><strong>${repos}</strong><span>${escape(t.statRepositories)}</span></div><div><strong>${follows}</strong><span>${escape(t.statFollows)}</span></div></div>
-<a class="more" href="${at(lang, "/skills/")}">${escape(t.seeAll)}${icon("arrow")}</a>
+    ? `<section class="registered reveal" data-home="registered">
+<div class="sec-row"><div class="sec-head"><p class="eyebrow">${escape(t.registeredEyebrow)}</p><h2>${escape(t.registeredHeading)}</h2></div><a class="more" href="${at(lang, "/skills/")}">${escape(t.seeAll)}${icon("arrow")}</a></div>
+<div class="cols">
+<div class="card col"><div class="chd">${escape(t.listProviders)}</div>${providers}<div class="nums">${stat(skills.length, t.statSkills)}${stat(repos, t.statRepositories)}${stat(follows, t.statFollows)}</div></div>
+<div class="card col"><div class="chd">${escape(t.listFollowers)}</div>${consumers || `<p class="empty">${escape(t.noFollows)}</p>`}</div>
 </div>
 </section>`
     : ""
 }
-<section class="list-yours"><div><h2>${escape(t.listYours)}</h2><p>${escape(t.listYoursBody)}</p></div><a class="button secondary" href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull")}${escape(t.howToRegister)}</a></section>
-</div>`;
+<section class="next reveal" data-home="next">
+<a class="ncard" href="${at(lang, "/spec/")}">${icon("book", 22)}<h3>${escape(t.definitionCardTitle)}</h3><p>${escape(fill(t.definitionCardBody, { date: latestDefinition }))}</p><span class="go">${escape(t.readDefinition)}${icon("arrow")}</span></a>
+<a class="ncard" href="${repoUrl}/blob/HEAD/${t.readme}${t.howToRegisterAnchor}">${icon("pull", 22)}<h3>${escape(t.listYours)}</h3><p>${escape(t.listYoursBody)}</p><span class="go">${escape(t.howToRegister)}${icon("arrow")}</span></a>
+</section>
+</div>
+${HOME_SCRIPT}`;
   return {
     lang,
     path: "/",
@@ -581,18 +791,16 @@ async function main() {
   }
   skills.sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
   const arrows = links(skills);
-  const consumer = skills.find((s) => s.follows.length > 0);
-  const example = consumer
-    ? { file: `${consumer.name}/musubi.json`, text: consumer.text }
-    : { file: "api-design/musubi.json", text: readFileSync(join(root, "examples", "skills", "api-design", "musubi.json"), "utf8") };
+  const lines = transcript();
 
   mkdirSync(join(o.out, "assets"), { recursive: true });
   writeFileSync(join(o.out, MARKER), "Written by node site/build.ts. The next build replaces this folder.\n");
   copyFileSync(join(root, "site", "site.css"), join(o.out, "assets", "site.css"));
+  for (const file of readdirSync(join(root, "site", "assets"))) copyFileSync(join(root, "site", "assets", file), join(o.out, "assets", file));
   const paths: string[] = [];
   const pages = Math.max(1, Math.ceil(skills.length / PER_PAGE));
   for (const lang of LANGS) {
-    const all: Page[] = [homePage(o, lang, skills, arrows, example), specPage(o, lang)];
+    const all: Page[] = [homePage(o, lang, skills, arrows, lines), specPage(o, lang)];
     for (let page = 1; page <= pages; page += 1) all.push(listPage(o, lang, skills, arrows, page, pages));
     for (const skill of skills) all.push(skillPage(o, lang, skill, arrows));
     for (const page of all) {

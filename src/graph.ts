@@ -18,10 +18,22 @@ const NODE_H = 64;
 const GAP_X = 160;
 const GAP_Y = 26;
 const PAD = 24;
+// Labels are drawn in a monospace face at this size, and each declares its width as textLength,
+// so the room left for them does not depend on the font the viewer has.
+const LABEL_SIZE = 11;
+const LABEL_CHAR = LABEL_SIZE * 0.6;
+const LABEL_INSET = 12;
+const LABEL_RISE = 8;
+const LABEL_STEP = 15;
+const BEND_ROOM = 96;
+
+const labelWidth = (label: string) => Math.ceil(label.length * LABEL_CHAR);
 
 // Draws each node as a box and each edge as an arrow from the follower to the provider, as one SVG.
 // A node's column is the length of the longest chain of nodes that follow it, so providers sit to the
 // right of the skills that follow them and every arrow points right.
+// Every arrow leaves its box in a straight line that runs past the longest label leaving that column,
+// and only bends after it, so no line crosses a label. Labels of one box stack upward over its line.
 export function graphSvg(nodes: GraphNode[], edges: GraphEdge[]): { svg: string; width: number; height: number } {
   const depth = new Map<string, number>();
   const column = (id: string, seen: Set<string>): number => {
@@ -41,29 +53,46 @@ export function graphSvg(nodes: GraphNode[], edges: GraphEdge[]): { svg: string;
     rows.set(c, row + 1);
     placed.set(node.id, { node, column: c, row });
   }
+  const drawn = edges.filter((e) => placed.has(e.from) && placed.has(e.to));
+  // The straight run out of a column ends past the widest label that leaves any box in it.
+  const run = new Map<number, number>();
+  const stack = new Map<string, number>();
+  for (const e of drawn) {
+    const c = (placed.get(e.from) as { column: number }).column;
+    run.set(c, Math.max(run.get(c) ?? 0, LABEL_INSET * 2 + labelWidth(e.label)));
+    stack.set(e.from, (stack.get(e.from) ?? 0) + 1);
+  }
+  const gap = Math.max(GAP_X, ...[...run.values()].map((r) => r + BEND_ROOM));
+  const stacked = Math.max(1, ...stack.values());
+  // Room above the first row for the highest label of a box with many arrows.
+  const head = PAD + Math.max(0, LABEL_RISE + LABEL_SIZE + (stacked - 1) * LABEL_STEP - (PAD + NODE_H / 2));
+
   const columns = Math.max(1, ...[...placed.values()].map((p) => p.column + 1));
   const maxRows = Math.max(1, ...rows.values());
-  const width = PAD * 2 + columns * NODE_W + (columns - 1) * GAP_X;
-  const height = PAD * 2 + maxRows * NODE_H + (maxRows - 1) * GAP_Y;
+  const width = PAD * 2 + columns * NODE_W + (columns - 1) * gap;
+  const height = head + PAD + maxRows * NODE_H + (maxRows - 1) * GAP_Y;
   // Columns with fewer boxes are centred against the tallest column.
-  const top = (c: number) => (height - PAD * 2 - ((rows.get(c) ?? 1) * NODE_H + ((rows.get(c) ?? 1) - 1) * GAP_Y)) / 2;
-  const x = (p: { column: number }) => PAD + p.column * (NODE_W + GAP_X);
-  const y = (p: { column: number; row: number }) => PAD + top(p.column) + p.row * (NODE_H + GAP_Y);
+  const top = (c: number) => (height - head - PAD - ((rows.get(c) ?? 1) * NODE_H + ((rows.get(c) ?? 1) - 1) * GAP_Y)) / 2;
+  const x = (p: { column: number }) => PAD + p.column * (NODE_W + gap);
+  const y = (p: { column: number; row: number }) => head + top(p.column) + p.row * (NODE_H + GAP_Y);
 
-  const edgeSvg = edges
-    .filter((e) => placed.has(e.from) && placed.has(e.to))
+  const seen = new Map<string, number>();
+  const edgeSvg = drawn
     .map((e) => {
       const a = placed.get(e.from) as { column: number; row: number };
       const b = placed.get(e.to) as { column: number; row: number };
       const x1 = x(a) + NODE_W;
       const y1 = y(a) + NODE_H / 2;
-      const x2 = x(b);
+      const xs = x1 + (run.get(a.column) as number);
+      const x2 = x(b) - 6;
       const y2 = y(b) + NODE_H / 2;
-      const mid = (x1 + x2) / 2;
+      const bend = (x2 - xs) / 2;
+      const k = seen.get(e.from) ?? 0;
+      seen.set(e.from, k + 1);
       return [
         `<g class="edge" data-edge="${attribute(e.key)}">`,
-        `<path d="M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2 - 6},${y2}" marker-end="url(#arrow)"/>`,
-        `<text x="${x1 + 12}" y="${y1 - 8}">${escape(e.label)}</text>`,
+        `<path d="M${x1},${y1} H${xs} C${xs + bend},${y1} ${x2 - bend},${y2} ${x2},${y2}" marker-end="url(#arrow)"/>`,
+        `<text class="label" x="${x1 + LABEL_INSET}" y="${y1 - LABEL_RISE - k * LABEL_STEP}" font-size="${LABEL_SIZE}" textLength="${labelWidth(e.label)}" lengthAdjust="spacingAndGlyphs">${escape(e.label)}</text>`,
         "</g>",
       ].join("");
     })
@@ -140,7 +169,7 @@ svg text { fill: var(--fg); font: 13px system-ui, sans-serif; }
 .node .name { font-weight: 600; font-size: 14px; }
 .node .detail { fill: var(--muted); font-size: 12px; }
 .edge path { fill: none; stroke: var(--line); stroke-width: 1.5; }
-.edge text { fill: var(--muted); font-size: 12px; }
+.edge text { fill: var(--muted); font: 11px ui-monospace, "JetBrains Mono", Menlo, monospace; }
 #arrow path { fill: var(--line); }
 table { border-collapse: collapse; margin-top: 20px; }
 th, td { text-align: left; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--line); }
