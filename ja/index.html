@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>musubi: スキルが出す中身を、それに従うスキルと結ぶ</title>
+<meta name="description" content="musubiは、エージェントのスキルが出す中身を、その中身に従うスキルと結び、中身が変わると従うスキルを確かめ直します。">
+<link rel="canonical" href="https://musubi.cardene.dev/ja/">
+<link rel="alternate" hreflang="en" href="https://musubi.cardene.dev/">
+<link rel="alternate" hreflang="ja" href="https://musubi.cardene.dev/ja/">
+<link rel="alternate" hreflang="x-default" href="https://musubi.cardene.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="musubi">
+<meta property="og:title" content="musubi: スキルが出す中身を、それに従うスキルと結ぶ">
+<meta property="og:description" content="musubiは、エージェントのスキルが出す中身を、その中身に従うスキルと結び、中身が変わると従うスキルを確かめ直します。">
+<meta property="og:url" content="https://musubi.cardene.dev/ja/">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://musubi.cardene.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1a1d24">
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"musubi","url":"https://musubi.cardene.dev/ja/","inLanguage":"ja","description":"musubiは、エージェントのスキルが出す中身を、その中身に従うスキルと結び、中身が変わると従うスキルを確かめ直します。"}</script>
+</head>
+<body>
+<header class="header"><div class="wrap">
+<div class="left">
+<a class="brand" href="/ja/"><svg class="logo" width="26" height="26" aria-hidden="true" viewBox="1 1 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="provider" d="M10.3 9.5C8.4 7.1 5.6 5.3 4 6.5C2.4 7.7 2.6 11.5 4.4 12.9C6.2 14.3 8.6 12.9 10.3 11.5M11 12.4C10.4 14.8 9.4 17 8 19.6"/><path class="follower" d="M13.7 9.5C15.6 7.1 18.4 5.3 20 6.5C21.6 7.7 21.4 11.5 19.6 12.9C17.8 14.3 15.4 12.9 13.7 11.5M13 12.4C13.6 14.8 14.6 17 16 19.6"/><path class="knot" d="M10.2 9.3a1.2 1.2 0 0 1 1.2-1.2h1.2a1.2 1.2 0 0 1 1.2 1.2v2.4a1.2 1.2 0 0 1-1.2 1.2h-1.2a1.2 1.2 0 0 1-1.2-1.2z"/></svg>musubi</a>
+<nav class="nav"><a href="/ja/spec/">定義</a><a href="/ja/skills/">スキル</a><a href="https://github.com/cardene777/musubi">GitHub</a></nav>
+</div>
+<div class="right">
+<div class="lang"><a data-lang-switch hreflang="en" lang="en" href="/">English</a><span aria-current="true">日本語</span></div>
+<button class="icon-button" type="button" data-theme-toggle aria-label="暗い表示と明るい表示を切り替える"><span class="when-dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="when-light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span></button>
+</div>
+</div></header>
+<main>
+<div class="wrap">
+<section class="hero" data-home="hero">
+<div>
+<p class="eyebrow draw" style="--d:0">Agent Skillsへの提案</p>
+<h1 class="draw" style="--d:80"><span class="phrase">スキルが出す中身を、</span><span class="phrase">それに従うスキルと結ぶ</span></h1>
+<p class="lead draw" style="--d:200">スキルは、文書の書式や検査のような中身を名前と版で出します。別のスキルは、その中身に従うと宣言します。中身が変わると、従う全てのスキルが確かめ直されます。</p>
+<div class="install draw" style="--d:300"><div class="tabs" role="tablist" aria-label="musubiの命令を入れる"><button type="button" role="tab" aria-selected="true" data-cmd="npm install -g musubi-cli">npm</button><button type="button" role="tab" aria-selected="false" data-cmd="pnpm add -g musubi-cli">pnpm</button><button type="button" role="tab" aria-selected="false" data-cmd="npx musubi-cli check skills">npx</button></div><div class="cmd"><span class="p">$</span><code class="t">npm install -g musubi-cli</code><button class="copy" type="button" data-copy="npm install -g musubi-cli" aria-label="写す"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></div></div>
+<div class="actions draw" style="--d:380"><a class="button primary" href="/ja/spec/">定義を読む<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a><a class="button secondary" href="/ja/skills/">スキルを見る</a></div>
+</div>
+<figure class="binding" data-motion data-checking="確認中" data-checked="確認済み">
+<div class="card provider draw" style="--d:500" data-provider="cardene777/agent-shuriken/design-doc"><a class="head" href="/ja/skills/cardene777/agent-shuriken/design-doc/"><span class="name">design-doc</span><span class="chip provides">provides</span></a><div class="prow" data-bump="1.1.0"><span class="flash"></span><span class="c">design</span><span class="v">1.0.0</span><span class="badge">変更</span><span class="f">formats/design.md</span></div><div class="prow"><span class="flash"></span><span class="c">verify</span><span class="v">1.0.0</span><span class="f">scripts/design-doc.py</span></div></div>
+<div class="cord" aria-hidden="true"><span class="line"></span><span class="pulse"></span><span class="label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>follows design, verify ^1.0.0</span></div>
+<div class="card followers"><a class="frow" href="/ja/skills/cardene777/agent-shuriken/contract-design/" style="--i:0" data-follower="cardene777/agent-shuriken/contract-design"><span class="bar"></span><span class="st"><svg class="tick" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><svg class="spin" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/></svg></span><span class="n">contract-design</span><span class="s">確認済み</span></a><a class="frow" href="/ja/skills/cardene777/agent-shuriken/dapp-architecture/" style="--i:1" data-follower="cardene777/agent-shuriken/dapp-architecture"><span class="bar"></span><span class="st"><svg class="tick" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><svg class="spin" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/></svg></span><span class="n">dapp-architecture</span><span class="s">確認済み</span></a><a class="frow" href="/ja/skills/cardene777/agent-shuriken/financial-standards/" style="--i:2" data-follower="cardene777/agent-shuriken/financial-standards"><span class="bar"></span><span class="st"><svg class="tick" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><svg class="spin" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/></svg></span><span class="n">financial-standards</span><span class="s">確認済み</span></a><a class="frow" href="/ja/skills/cardene777/agent-shuriken/multichain-design/" style="--i:3" data-follower="cardene777/agent-shuriken/multichain-design"><span class="bar"></span><span class="st"><svg class="tick" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><svg class="spin" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/></svg></span><span class="n">multichain-design</span><span class="s">確認済み</span></a><a class="frow" href="/ja/skills/cardene777/agent-shuriken/wallet-design/" style="--i:4" data-follower="cardene777/agent-shuriken/wallet-design"><span class="bar"></span><span class="st"><svg class="tick" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><svg class="spin" viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/></svg></span><span class="n">wallet-design</span><span class="s">確認済み</span></a></div>
+<figcaption class="sr">design-docが出す中身に、登録された5個のスキルが従っています。版が変わると、従うスキルがそれぞれ確かめ直されます。</figcaption>
+</figure>
+</section>
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.querySelector(".hero").classList.add("motion")</script>
+<section class="how reveal" data-home="how">
+<div class="sec-head"><p class="eyebrow">仕組み</p><h2>2つの宣言と1つの検査</h2></div>
+<ol class="steps">
+<li class="step" data-step="1"><span class="num">01</span><h3>中身を出す</h3><p>出す側のスキルは、musubi.jsonで中身に名前と版を付けます。</p><div class="code"><div class="ch">design-doc/musubi.json</div><pre><span class="key">&quot;provides&quot;</span>: {
+  <span class="k">&quot;design&quot;</span>: {
+    <span class="key">&quot;version&quot;</span>: &quot;1.0.0&quot;,
+    <span class="key">&quot;file&quot;</span>: &quot;formats/design.md&quot;,
+    <span class="key">&quot;check&quot;</span>: &quot;checks/design.json&quot;
+  }
+}</pre></div></li>
+<li class="step" data-step="2"><span class="num">02</span><h3>中身に従う</h3><p>従う側のスキルは、その中身と受け入れる版の範囲と、確かめた時の指紋を書きます。</p><div class="code"><div class="ch">api-design/musubi.json</div><pre><span class="key">&quot;follows&quot;</span>: {
+  <span class="k2">&quot;design-doc/design&quot;</span>: {
+    <span class="key">&quot;version&quot;</span>: &quot;^1.0.0&quot;,
+    <span class="key">&quot;integrity&quot;</span>: &quot;sha256-yNSw…&quot;,
+    <span class="key">&quot;examples&quot;</span>: [
+      &quot;examples/orders-api.md&quot;
+    ]
+  }
+}</pre></div></li>
+<li class="step" data-step="3"><span class="num">03</span><h3>確かめ直す</h3><p>中身が変わると、musubi checkは指紋の合わなくなった従う側を挙げます。見直した後に--updateで新しい指紋を記録します。</p><div class="code"><div class="ch">端末</div><pre class="term"><span class="line-cmd">$ musubi check skills</span>
+<span class="line-out">skills/api-design/musubi.json:7: api-design: the fingerprint of design-doc/design does not match, so its content changed after the last check; review the change and run musubi check --update</span>
+<span class="line-err">musubi check: 1 problem</span>
+<span class="line-cmd">$ musubi check skills --update</span>
+<span class="line-ok">musubi check: ok (skills=2, follows=1, updated=1)</span></pre></div></li>
+</ol>
+</section>
+<section class="registered reveal" data-home="registered">
+<div class="sec-row"><div class="sec-head"><p class="eyebrow">登録されたスキル</p><h2>既に互いに従っているスキル</h2></div><a class="more" href="/ja/skills/">登録された全てのスキルを見る<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></div>
+<div class="cols">
+<div class="card col"><div class="chd">中身を出すスキル</div><a class="irow" href="/ja/skills/cardene777/agent-shuriken/design-doc/"><span class="i">01</span><span class="t"><b>design-doc</b><span>design 1.0.0, verify 1.0.0</span></span><span class="r">従うスキル5個</span></a><div class="nums"><div><strong data-count="6">6</strong><span>スキル</span></div><div><strong data-count="1">1</strong><span>repo</span></div><div><strong data-count="10">10</strong><span>従う中身</span></div></div></div>
+<div class="card col"><div class="chd">中身に従うスキル</div><a class="irow" href="/ja/skills/cardene777/agent-shuriken/contract-design/"><span class="i">01</span><span class="t"><b>contract-design</b><span>design-doc/design ^1.0.0, design-doc/verify ^1.0.0</span></span></a><a class="irow" href="/ja/skills/cardene777/agent-shuriken/dapp-architecture/"><span class="i">02</span><span class="t"><b>dapp-architecture</b><span>design-doc/design ^1.0.0, design-doc/verify ^1.0.0</span></span></a><a class="irow" href="/ja/skills/cardene777/agent-shuriken/financial-standards/"><span class="i">03</span><span class="t"><b>financial-standards</b><span>design-doc/design ^1.0.0, design-doc/verify ^1.0.0</span></span></a><a class="irow" href="/ja/skills/cardene777/agent-shuriken/multichain-design/"><span class="i">04</span><span class="t"><b>multichain-design</b><span>design-doc/design ^1.0.0, design-doc/verify ^1.0.0</span></span></a><a class="irow" href="/ja/skills/cardene777/agent-shuriken/wallet-design/"><span class="i">05</span><span class="t"><b>wallet-design</b><span>design-doc/design ^1.0.0, design-doc/verify ^1.0.0</span></span></a></div>
+</div>
+</section>
+<section class="next reveal" data-home="next">
+<a class="ncard" href="/ja/spec/"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg><h3>定義</h3><p>出す側と使う側の宣言、見つけ方と読み込み方、版と指紋、確かめ直し方、検査の決まりを定めます。定義の版 2026-11-19。</p><span class="go">定義を読む<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></a>
+<a class="ncard" href="https://github.com/cardene777/musubi/blob/HEAD/README.ja.md#サイトにスキルを載せる"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/></svg><h3>スキルを載せる</h3><p>載せるスキルのフォルダを並べたregistry/&lt;owner&gt;/&lt;repo&gt;.jsonを足すPRを送ります。</p><span class="go">載せ方<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></a>
+</section>
+</div>
+<script>
+(function(){
+var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+var tabs=[].slice.call(document.querySelectorAll(".tabs [data-cmd]")),cmd=document.querySelector(".install .t"),copy=document.querySelector(".install .copy");
+tabs.forEach(function(b){b.addEventListener("click",function(){tabs.forEach(function(x){x.setAttribute("aria-selected",String(x===b))});cmd.textContent=b.dataset.cmd;copy.setAttribute("data-copy",b.dataset.cmd)})});
+var term=document.querySelector(".term");
+function count(el){var n=+el.dataset.count,t0=performance.now();function step(t){var p=Math.min(1,(t-t0)/900);el.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+function type(){var lines=[].slice.call(term.children).map(function(s){return[s.className,s.textContent]}),i=0;term.style.minHeight=term.offsetHeight+"px";term.textContent="";
+function next(){if(i>=lines.length){var c=document.createElement("span");c.className="caret";term.appendChild(c);return}var l=lines[i++],s=document.createElement("span"),isCmd=l[0]==="line-cmd",j=0;s.className=l[0];term.appendChild(s);
+(function ch(){s.textContent=l[1].slice(0,++j);if(j<l[1].length)setTimeout(ch,isCmd?34:4);else{term.appendChild(document.createTextNode("\n"));setTimeout(next,isCmd?360:120)}})()}next()}
+var io=!reduce&&"IntersectionObserver" in window?new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;var el=e.target;el.classList.add("in");io.unobserve(el);if(el.contains(term))setTimeout(type,400);el.querySelectorAll("[data-count]").forEach(count)})},{threshold:.2}):null;
+document.querySelectorAll(".reveal").forEach(function(el){io?io.observe(el):el.classList.add("in")});
+var fig=document.querySelector(".binding"),hero=document.querySelector(".hero"),bump=fig.querySelector("[data-bump]");
+if(reduce||!bump)return;
+var rows=[].slice.call(fig.querySelectorAll("[data-follower]")),pulse=fig.querySelector(".pulse"),cord=fig.querySelector(".cord"),ver=bump.querySelector(".v"),before=ver.textContent,after=bump.dataset.bump;
+function status(r,cls,text){r.classList.remove("checking","rechecked");if(cls)r.classList.add(cls);r.querySelector(".s").textContent=text}
+function story(){if(document.hidden)return setTimeout(story,1000);
+rows.forEach(function(r){status(r,"",fig.dataset.checked)});bump.classList.remove("changed");ver.textContent=before;
+setTimeout(function(){bump.classList.add("changed");ver.textContent=after},900);
+setTimeout(function(){pulse.animate([{top:"0px",opacity:0},{opacity:1,offset:.15},{opacity:1,offset:.85},{top:(cord.offsetHeight-10)+"px",opacity:0}],{duration:800,easing:"cubic-bezier(.4,0,.2,1)"})},1700);
+rows.forEach(function(r,i){setTimeout(function(){status(r,"checking",fig.dataset.checking)},2500+i*260);setTimeout(function(){status(r,"rechecked",fig.dataset.checked)},3400+i*260)});
+setTimeout(function(){bump.classList.remove("changed")},6400);setTimeout(story,8200)}
+setTimeout(function(){hero.classList.remove("motion");story()},3000);
+})();
+</script>
+</main>
+<footer class="footer"><div class="wrap">
+<a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MITライセンス</a>
+<div class="versions"><span>定義の版 2026-11-19</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.1.0</a></div>
+</div></footer>
+<script>
+document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
+document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){if(navigator.clipboard)navigator.clipboard.writeText(b.getAttribute("data-copy")).catch(function(){});b.classList.add("done");setTimeout(function(){b.classList.remove("done")},1200)})});
+</script>
+</body>
+</html>

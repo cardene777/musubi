@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cardene777/agent-shurikenのdesign-doc | musubi</title>
+<meta name="description" content="Holds the shared format of a design document and the verify script that checks one, for skills that write designs, such as the design skills of evm-dev. Use when another skill says to write in the design format of the design-doc skill or to run its verify. It writes no design on its own.">
+<link rel="canonical" href="https://musubi.cardene.dev/ja/skills/cardene777/agent-shuriken/design-doc/">
+<link rel="alternate" hreflang="en" href="https://musubi.cardene.dev/skills/cardene777/agent-shuriken/design-doc/">
+<link rel="alternate" hreflang="ja" href="https://musubi.cardene.dev/ja/skills/cardene777/agent-shuriken/design-doc/">
+<link rel="alternate" hreflang="x-default" href="https://musubi.cardene.dev/skills/cardene777/agent-shuriken/design-doc/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="musubi">
+<meta property="og:title" content="cardene777/agent-shurikenのdesign-doc | musubi">
+<meta property="og:description" content="Holds the shared format of a design document and the verify script that checks one, for skills that write designs, such as the design skills of evm-dev. Use when another skill says to write in the design format of the design-doc skill or to run its verify. It writes no design on its own.">
+<meta property="og:url" content="https://musubi.cardene.dev/ja/skills/cardene777/agent-shuriken/design-doc/">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://musubi.cardene.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1a1d24">
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","@id":"https://musubi.cardene.dev/ja/skills/cardene777/agent-shuriken/design-doc/","name":"design-doc","description":"Holds the shared format of a design document and the verify script that checks one, for skills that write designs, such as the design skills of evm-dev. Use when another skill says to write in the design format of the design-doc skill or to run its verify. It writes no design on its own.","url":"https://musubi.cardene.dev/ja/skills/cardene777/agent-shuriken/design-doc/","codeRepository":"https://github.com/cardene777/agent-shuriken","inLanguage":"ja","isBasedOn":[],"hasPart":[{"@type":"CreativeWork","name":"design-doc/design","version":"1.0.0"},{"@type":"CreativeWork","name":"design-doc/verify","version":"1.0.0"}]}</script>
+</head>
+<body>
+<header class="header"><div class="wrap">
+<div class="left">
+<a class="brand" href="/ja/"><svg class="logo" width="26" height="26" aria-hidden="true" viewBox="1 1 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="provider" d="M10.3 9.5C8.4 7.1 5.6 5.3 4 6.5C2.4 7.7 2.6 11.5 4.4 12.9C6.2 14.3 8.6 12.9 10.3 11.5M11 12.4C10.4 14.8 9.4 17 8 19.6"/><path class="follower" d="M13.7 9.5C15.6 7.1 18.4 5.3 20 6.5C21.6 7.7 21.4 11.5 19.6 12.9C17.8 14.3 15.4 12.9 13.7 11.5M13 12.4C13.6 14.8 14.6 17 16 19.6"/><path class="knot" d="M10.2 9.3a1.2 1.2 0 0 1 1.2-1.2h1.2a1.2 1.2 0 0 1 1.2 1.2v2.4a1.2 1.2 0 0 1-1.2 1.2h-1.2a1.2 1.2 0 0 1-1.2-1.2z"/></svg>musubi</a>
+<nav class="nav"><a href="/ja/spec/">定義</a><a href="/ja/skills/" aria-current="page">スキル</a><a href="https://github.com/cardene777/musubi">GitHub</a></nav>
+</div>
+<div class="right">
+<div class="lang"><a data-lang-switch hreflang="en" lang="en" href="/skills/cardene777/agent-shuriken/design-doc/">English</a><span aria-current="true">日本語</span></div>
+<button class="icon-button" type="button" data-theme-toggle aria-label="暗い表示と明るい表示を切り替える"><span class="when-dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="when-light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span></button>
+</div>
+</div></header>
+<main>
+<div class="wrap wide"><div class="skill">
+<div>
+<div class="crumb"><a href="/ja/skills/">スキル</a><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><span>design-doc</span></div>
+<div class="title-row"><h1>design-doc</h1><span class="role provider">出す側</span></div>
+<p class="description">Holds the shared format of a design document and the verify script that checks one, for skills that write designs, such as the design skills of evm-dev. Use when another skill says to write in the design format of the design-doc skill or to run its verify. It writes no design on its own.</p>
+<div class="graph"><svg width="771" height="472" viewBox="0 0 771 472" role="img" aria-label="Skill dependency graph">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<g class="edge" data-edge="cardene777/agent-shuriken/contract-design -> cardene777/agent-shuriken/design-doc"><path d="M256,56 H419 C464,56 464,236 509,236" marker-end="url(#arrow)"/><text class="label" x="268" y="48" font-size="11" textLength="139" lengthAdjust="spacingAndGlyphs">design, verify ^1.0.0</text></g>
+<g class="edge" data-edge="cardene777/agent-shuriken/dapp-architecture -> cardene777/agent-shuriken/design-doc"><path d="M256,146 H419 C464,146 464,236 509,236" marker-end="url(#arrow)"/><text class="label" x="268" y="138" font-size="11" textLength="139" lengthAdjust="spacingAndGlyphs">design, verify ^1.0.0</text></g>
+<g class="edge" data-edge="cardene777/agent-shuriken/financial-standards -> cardene777/agent-shuriken/design-doc"><path d="M256,236 H419 C464,236 464,236 509,236" marker-end="url(#arrow)"/><text class="label" x="268" y="228" font-size="11" textLength="139" lengthAdjust="spacingAndGlyphs">design, verify ^1.0.0</text></g>
+<g class="edge" data-edge="cardene777/agent-shuriken/multichain-design -> cardene777/agent-shuriken/design-doc"><path d="M256,326 H419 C464,326 464,236 509,236" marker-end="url(#arrow)"/><text class="label" x="268" y="318" font-size="11" textLength="139" lengthAdjust="spacingAndGlyphs">design, verify ^1.0.0</text></g>
+<g class="edge" data-edge="cardene777/agent-shuriken/wallet-design -> cardene777/agent-shuriken/design-doc"><path d="M256,416 H419 C464,416 464,236 509,236" marker-end="url(#arrow)"/><text class="label" x="268" y="408" font-size="11" textLength="139" lengthAdjust="spacingAndGlyphs">design, verify ^1.0.0</text></g>
+<g class="node" data-skill="cardene777/agent-shuriken/contract-design"><a href="/ja/skills/cardene777/agent-shuriken/contract-design/"><rect x="24" y="24" width="232" height="64" rx="10"/><text class="name" x="38" y="50">contract-design</text><text class="detail" x="38" y="70">従う中身 2個</text></a></g>
+<g class="node" data-skill="cardene777/agent-shuriken/dapp-architecture"><a href="/ja/skills/cardene777/agent-shuriken/dapp-architecture/"><rect x="24" y="114" width="232" height="64" rx="10"/><text class="name" x="38" y="140">dapp-architecture</text><text class="detail" x="38" y="160">従う中身 2個</text></a></g>
+<g class="node current" data-skill="cardene777/agent-shuriken/design-doc"><a href="/ja/skills/cardene777/agent-shuriken/design-doc/"><rect x="515" y="204" width="232" height="64" rx="10"/><text class="name" x="529" y="230">design-doc</text><text class="detail" x="529" y="250">出す中身 design, verify</text></a></g>
+<g class="node" data-skill="cardene777/agent-shuriken/financial-standards"><a href="/ja/skills/cardene777/agent-shuriken/financial-standards/"><rect x="24" y="204" width="232" height="64" rx="10"/><text class="name" x="38" y="230">financial-standards</text><text class="detail" x="38" y="250">従う中身 2個</text></a></g>
+<g class="node" data-skill="cardene777/agent-shuriken/multichain-design"><a href="/ja/skills/cardene777/agent-shuriken/multichain-design/"><rect x="24" y="294" width="232" height="64" rx="10"/><text class="name" x="38" y="320">multichain-design</text><text class="detail" x="38" y="340">従う中身 2個</text></a></g>
+<g class="node" data-skill="cardene777/agent-shuriken/wallet-design"><a href="/ja/skills/cardene777/agent-shuriken/wallet-design/"><rect x="24" y="384" width="232" height="64" rx="10"/><text class="name" x="38" y="410">wallet-design</text><text class="detail" x="38" y="430">従う中身 2個</text></a></g>
+</svg></div>
+<p class="hint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg>図のスキルを押すと、そのスキルの頁を開きます</p>
+</div>
+<aside class="panel">
+<section data-section="source"><h2>置き場</h2><a class="source" href="https://github.com/cardene777/agent-shuriken"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>cardene777/agent-shuriken</a><a class="source" href="https://github.com/cardene777/agent-shuriken/tree/HEAD/plugins/doc-formats/skills/design-doc"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>plugins/doc-formats/skills/design-doc</a></section>
+<section data-section="provides"><h2>出す中身<span>2</span></h2><div class="content"><div class="top"><strong>design</strong><span class="chip provides">1.0.0</span></div><div class="file">formats/design.md</div><div class="file check">検査 checks/design.json</div></div><div class="content"><div class="top"><strong>verify</strong><span class="chip provides">1.0.0</span></div><div class="file">scripts/design-doc.py</div></div></section>
+<section data-section="followed-by"><h2>従っているスキル<span>5</span></h2><ul class="people"><li><a href="/ja/skills/cardene777/agent-shuriken/contract-design/">contract-design<span class="repo">cardene777/agent-shuriken</span></a><span class="chip follows">design, verify ^1.0.0</span></li><li><a href="/ja/skills/cardene777/agent-shuriken/dapp-architecture/">dapp-architecture<span class="repo">cardene777/agent-shuriken</span></a><span class="chip follows">design, verify ^1.0.0</span></li><li><a href="/ja/skills/cardene777/agent-shuriken/financial-standards/">financial-standards<span class="repo">cardene777/agent-shuriken</span></a><span class="chip follows">design, verify ^1.0.0</span></li><li><a href="/ja/skills/cardene777/agent-shuriken/multichain-design/">multichain-design<span class="repo">cardene777/agent-shuriken</span></a><span class="chip follows">design, verify ^1.0.0</span></li><li><a href="/ja/skills/cardene777/agent-shuriken/wallet-design/">wallet-design<span class="repo">cardene777/agent-shuriken</span></a><span class="chip follows">design, verify ^1.0.0</span></li></ul></section>
+<section data-section="follows"><h2>従う中身<span>0</span></h2><p class="empty">ほかのスキルの中身に従っていません</p></section>
+</aside>
+</div></div>
+</main>
+<footer class="footer"><div class="wrap">
+<a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MITライセンス</a>
+<div class="versions"><span>定義の版 2026-11-19</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.1.0</a></div>
+</div></footer>
+<script>
+document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
+document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){if(navigator.clipboard)navigator.clipboard.writeText(b.getAttribute("data-copy")).catch(function(){});b.classList.add("done");setTimeout(function(){b.classList.remove("done")},1200)})});
+</script>
+</body>
+</html>

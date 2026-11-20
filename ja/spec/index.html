@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>musubiの定義 | musubi</title>
+<meta name="description" content="musubiは、エージェントのスキルが出す中身を、その中身に従うスキルと結び、中身が変わると従うスキルを確かめ直します。">
+<link rel="canonical" href="https://musubi.cardene.dev/ja/spec/">
+<link rel="alternate" hreflang="en" href="https://musubi.cardene.dev/spec/">
+<link rel="alternate" hreflang="ja" href="https://musubi.cardene.dev/ja/spec/">
+<link rel="alternate" hreflang="x-default" href="https://musubi.cardene.dev/spec/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="musubi">
+<meta property="og:title" content="musubiの定義 | musubi">
+<meta property="og:description" content="musubiは、エージェントのスキルが出す中身を、その中身に従うスキルと結び、中身が変わると従うスキルを確かめ直します。">
+<meta property="og:url" content="https://musubi.cardene.dev/ja/spec/">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://musubi.cardene.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1a1d24">
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"musubiの定義","inLanguage":"ja","url":"https://musubi.cardene.dev/ja/spec/","version":"2026-11-19","translationOfWork":{"@id":"https://musubi.cardene.dev/spec/"}}</script>
+</head>
+<body>
+<header class="header"><div class="wrap">
+<div class="left">
+<a class="brand" href="/ja/"><svg class="logo" width="26" height="26" aria-hidden="true" viewBox="1 1 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="provider" d="M10.3 9.5C8.4 7.1 5.6 5.3 4 6.5C2.4 7.7 2.6 11.5 4.4 12.9C6.2 14.3 8.6 12.9 10.3 11.5M11 12.4C10.4 14.8 9.4 17 8 19.6"/><path class="follower" d="M13.7 9.5C15.6 7.1 18.4 5.3 20 6.5C21.6 7.7 21.4 11.5 19.6 12.9C17.8 14.3 15.4 12.9 13.7 11.5M13 12.4C13.6 14.8 14.6 17 16 19.6"/><path class="knot" d="M10.2 9.3a1.2 1.2 0 0 1 1.2-1.2h1.2a1.2 1.2 0 0 1 1.2 1.2v2.4a1.2 1.2 0 0 1-1.2 1.2h-1.2a1.2 1.2 0 0 1-1.2-1.2z"/></svg>musubi</a>
+<nav class="nav"><a href="/ja/spec/" aria-current="page">定義</a><a href="/ja/skills/">スキル</a><a href="https://github.com/cardene777/musubi">GitHub</a></nav>
+</div>
+<div class="right">
+<div class="lang"><a data-lang-switch hreflang="en" lang="en" href="/spec/">English</a><span aria-current="true">日本語</span></div>
+<button class="icon-button" type="button" data-theme-toggle aria-label="暗い表示と明るい表示を切り替える"><span class="when-dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="when-light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span></button>
+</div>
+</div></header>
+<main>
+<div class="wrap"><div class="definition">
+<nav class="toc" aria-label="目次"><strong>目次</strong>
+<a href="#s1">全体の形</a>
+<a href="#s2">出す側の宣言</a>
+<a href="#s3">使う側の宣言</a>
+<a href="#s4">見つけ方と読み込み方</a>
+<a href="#s5">版と指紋</a>
+<a href="#s6">確かめ直し方</a>
+<a href="#s7">検査の決まり</a>
+<a href="#s8">既にある仕組みとの関係</a>
+<a href="#s9">musubiの命令</a>
+</nav>
+<article class="article">
+<div class="version"><span class="chip">定義の版 2026-11-19</span><span>正の定義は英語の版で、この頁はその日本語の訳です</span></div>
+<h1>musubiの定義</h1>
+<p>定義の版は<code>2026-11-19</code>。</p>
+<p>musubiは、エージェントのスキルが出す中身 (文書の書式や書き方の決まりなど) を、その中身に従うスキルと結ぶ。出す側のスキルは中身を名前と版で宣言し、使う側のスキルはその中身に従うと宣言する。エージェントは<code>SKILL.md</code>を読むどのエージェントでも同じ仕方で中身を読み込み、中身が変わると従うスキルを確かめ直す。正の定義は英語の<a href="/spec/">musubi.md</a>で、この文書はその日本語の訳である。</p>
+<h2 id="s1">全体の形</h2>
+<p>musubiに加わるスキルは、<code>SKILL.md</code>をAgent Skillsが決める形のまま持ち、その横に<code>musubi.json</code>を1つ足す。</p>
+<div class="table"><table><thead><tr><th>file</th><th>書く人</th><th>持つ物</th></tr></thead><tbody><tr><td><code>SKILL.md</code></td><td>スキルを書く人</td><td>Agent Skillsの頭の欄と本文 (変えない)。本文がエージェントに、どの中身を読むかを伝える</td></tr><tr><td><code>musubi.json</code></td><td>スキルを書く人か<code>musubi add</code></td><td>スキルが出す中身と、従う中身</td></tr><tr><td>中身のfile</td><td>出す側</td><td>書式、書き方の決まりなど、使う側が従う文</td></tr><tr><td>検査のfile</td><td>出す側</td><td><code>musubi check</code>が使う側の例に回すJSONの決まり</td></tr></tbody></table></div>
+<pre data-lang="text"><code>skills/
+├── design-doc/              出す側のスキル
+│   ├── SKILL.md             出す中身ごとにfileを名指す
+│   ├── musubi.json          &quot;provides&quot;: design 1.0.0
+│   ├── formats/design.md    中身
+│   └── checks/design.json   検査の決まり
+└── api-design/              使う側のスキル
+    ├── SKILL.md             design-doc/design を指す3行
+    ├── musubi.json          &quot;follows&quot;: design-doc/design ^1.0.0 と指紋
+    └── examples/orders-api.md   検査を回す例</code></pre>
+<p>ここで使う語は<a href="https://github.com/cardene777/musubi/blob/HEAD/GLOSSARY.ja.md" rel="noopener">GLOSSARY.ja.md</a>が定める。</p>
+<h2 id="s2">出す側の宣言</h2>
+<p>出す側のスキルは、出す中身を<code>musubi.json</code>の<code>provides</code>に並べる。</p>
+<pre data-lang="json"><code>{
+  &quot;$schema&quot;: &quot;../../../schema/2026-11-19/musubi.schema.json&quot;,
+  &quot;musubi&quot;: &quot;2026-11-19&quot;,
+  &quot;provides&quot;: {
+    &quot;design&quot;: { &quot;version&quot;: &quot;1.0.0&quot;, &quot;file&quot;: &quot;formats/design.md&quot;, &quot;check&quot;: &quot;checks/design.json&quot; }
+  }
+}</code></pre>
+<div class="table"><table><thead><tr><th>欄</th><th>要るか</th><th>意味</th></tr></thead><tbody><tr><td><code>$schema</code></td><td>任意</td><td>編集の画面がJSON Schemaを見つける所 (<code>schema/&lt;日付&gt;/musubi.schema.json</code>)</td></tr><tr><td><code>musubi</code></td><td>要る</td><td>このfileが従う定義の版</td></tr><tr><td><code>provides.&lt;名前&gt;</code></td><td>中身ごとに1つ要る</td><td>中身の名前。小文字の語を<code>-</code>でつなぐ</td></tr><tr><td><code>provides.&lt;名前&gt;.version</code></td><td>要る</td><td>中身の版 (<code>MAJOR.MINOR.PATCH</code>)</td></tr><tr><td><code>provides.&lt;名前&gt;.file</code></td><td>要る</td><td>中身のfile。スキルのフォルダからの相対path</td></tr><tr><td><code>provides.&lt;名前&gt;.check</code></td><td>任意</td><td>JSONの決まりのfile。スキルのフォルダからの相対pathで、検査の決まりの節が形を決める</td></tr></tbody></table></div>
+<p>中身はfile 1つと、任意で付ける検査1つの組で、<code>design-doc/design</code>のように<code>&lt;スキル名&gt;/&lt;名前&gt;</code>で呼ぶ。中身ごとに版を持つので、1つを変えてもほかの中身の版は変わらない。pathはスキルのフォルダの中に留める。<code>musubi check</code>は絶対pathと、フォルダの外へ出るpathを拒む。エージェントは出す側の<code>SKILL.md</code>の本文を読んでfileを見つけるので、出す側の本文は中身ごとにfileを名指す (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0002-agents-open-the-provider-by-name.ja.md" rel="noopener">0002</a>)。<code>SKILL.md</code>がAgent Skillsの検査を通り続けるよう、宣言は頭の欄でなく別の<code>musubi.json</code>に書く (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0001-declarations-in-musubi-json.ja.md" rel="noopener">0001</a>)。</p>
+<h2 id="s3">使う側の宣言</h2>
+<p>使う側のスキルは、従う中身を<code>musubi.json</code>の<code>follows</code>に並べる。</p>
+<pre data-lang="json"><code>{
+  &quot;musubi&quot;: &quot;2026-11-19&quot;,
+  &quot;follows&quot;: {
+    &quot;design-doc/design&quot;: {
+      &quot;version&quot;: &quot;^1.0.0&quot;,
+      &quot;integrity&quot;: &quot;sha256-yNSwpBT+xXEV5bGBqedpHmjWIHVi+JaAnRATAJ0s7wM=&quot;,
+      &quot;examples&quot;: [&quot;examples/orders-api.md&quot;]
+    }
+  }
+}</code></pre>
+<div class="table"><table><thead><tr><th>欄</th><th>要るか</th><th>意味</th></tr></thead><tbody><tr><td><code>follows.&lt;スキル&gt;/&lt;中身&gt;</code></td><td>中身ごとに1つ要る</td><td>従う中身</td></tr><tr><td><code>follows.&lt;名前&gt;.version</code></td><td>要る</td><td>使う側が従える版。版と指紋の節が形を決める</td></tr><tr><td><code>follows.&lt;名前&gt;.integrity</code></td><td>要る</td><td>最後に確かめた時の中身の指紋</td></tr><tr><td><code>follows.&lt;名前&gt;.examples</code></td><td>任意</td><td>出す側の検査を回す、使う側のfile</td></tr></tbody></table></div>
+<p>使う側の<code>SKILL.md</code>の本文は、従う中身ごとに次の3行を持つ。3行は<code>musubi add</code>が出す。</p>
+<pre data-lang="text"><code>Write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
+If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
+If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.</code></pre>
+<p>中身のfileが命令のscriptの時は、1行目が書式として読む代わりに回すことを伝える。scriptかどうかは、大文字と小文字を問わず拡張子<code>.py</code>、<code>.sh</code>、<code>.bash</code>、<code>.js</code>、<code>.mjs</code>、<code>.cjs</code>、<code>.ts</code>で見分ける。</p>
+<pre data-lang="text"><code>Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.</code></pre>
+<p>使う側は、従う中身に自分の節を足せる。出す側の検査が求める物を外すことと、名前を変えることはできない。1つのスキルが中身を出し、同時に別の中身に従ってもよい。出す側の書式が共通の書き方の決まりに従う形がこれに当たる。</p>
+<h2 id="s4">見つけ方と読み込み方</h2>
+<p>エージェントは<code>SKILL.md</code>の本文を読んで中身を読み込み、スキルを使う間に<code>musubi.json</code>は読まない。そのため、musubiを知らないエージェントも、命令を持つエージェントと同じ仕方で中身を読み込む。</p>
+<ol><li>エージェントは、ほかのスキルと同じように使う側の<code>SKILL.md</code>を読む。</li><li>本文が出す側のスキルと中身を名指す。エージェントは入っているスキルから出す側のスキルを名前で開き、その本文がその中身に名指すfileを読む。</li><li>エージェントはそのfileだけを丸ごと読み、出す側のほかの中身は読まない。</li><li>出す側のスキルが入っていない時、エージェントは書き始めず、足りないスキルとその入れ方を人に伝えて止まる。</li></ol>
+<p>Claude Code、Codex、GitHub Copilot CLI、Gemini CLIはどれも入っているスキルを名前で並べるので、スキルがどこに入っていても名前で開ける。別々のpluginから入った2つのスキルは隣り合わないので、スキルのフォルダどうしの相対pathは使わない。</p>
+<p><code>musubi check</code>と<code>musubi graph</code>は、命令に渡したフォルダからスキルを読む。フォルダを渡さない時は、今のフォルダとhomeのフォルダの<code>.claude/skills</code>、<code>.agents/skills</code>、<code>.github/skills</code>、<code>.gemini/skills</code>を読む。そのどれかの直下に在り、<code>SKILL.md</code>を持つフォルダがスキルで、名前はフォルダの名前である。同じ名前のスキルが2つのフォルダに在る時は、上の順で先のフォルダの物を使い、<code>musubi check</code>がもう1つを知らせる。</p>
+<p>エージェントは中身のfileを丸ごと読むので、<code>musubi check</code>は500行を超える中身を知らせる。500行はAgent Skillsが<code>SKILL.md</code>に勧める長さである。そのような中身も拒まず、長い中身は出す側が複数の中身に分ける。</p>
+<h2 id="s5">版と指紋</h2>
+<p>中身の版は<code>MAJOR.MINOR.PATCH</code>で表す。</p>
+<div class="table"><table><thead><tr><th>中身か検査の変更</th><th>上げる数</th></tr></thead><tbody><tr><td>使う側が壊れうる変更。要る節や列を外すか名前を変える、検査を厳しくする</td><td><code>MAJOR</code></td></tr><tr><td>使う側が使ってよい物を足す変更。任意の節を足すなど</td><td><code>MINOR</code></td></tr><tr><td>どの使う側も通ったままの、言い回しの変更</td><td><code>PATCH</code></td></tr></tbody></table></div>
+<p>使う側は、従える版を次の3つの形のどれかで書き、npmと同じ仕方で読む。</p>
+<div class="table"><table><thead><tr><th>形</th><th>従える版</th><th>例</th></tr></thead><tbody><tr><td><code>^X.Y.Z</code></td><td><code>X.Y.Z</code>から次の<code>MAJOR</code>の手前まで。<code>0.Y.Z</code>は次の<code>MINOR</code>の手前まで</td><td><code>^1.2.0</code>は<code>1.9.4</code>に従い、<code>2.0.0</code>には従わない</td></tr><tr><td><code>~X.Y.Z</code></td><td><code>X.Y.Z</code>から次の<code>MINOR</code>の手前まで</td><td><code>~1.2.0</code>は<code>1.2.7</code>に従い、<code>1.3.0</code>には従わない</td></tr><tr><td><code>X.Y.Z</code></td><td><code>X.Y.Z</code>だけ</td><td><code>1.2.0</code></td></tr></tbody></table></div>
+<p>指紋は、使う側が最後に何と照らして確かめたかを残す。エージェントは出す側の<code>SKILL.md</code>と中身のfileを読み、検査は使う側が通るかを決めるので、指紋はこの3つのfileを含める。</p>
+<pre data-lang="text"><code>for each path in [SKILL.md, &lt;file&gt;, &lt;check, when present&gt;]:
+    hash.update(path + &quot;\n&quot; + byte length in decimal + &quot;\n&quot;)
+    hash.update(the file's bytes)
+    hash.update(&quot;\n&quot;)
+integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
+<p>pathは出す側のスキルのフォルダからの相対で、区切りに<code>/</code>を使う。版の範囲と指紋は<code>musubi.json</code>に並べて書き、lockfileは持たない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.ja.md" rel="noopener">0003</a>)。</p>
+<p>定義そのものの版は日付で表す。<code>musubi.json</code>と検査のfileは、従う日付を<code>musubi</code>の欄に書く。<code>musubi check</code>は知っている日付を全て読み、ほかの日付を拒む。知っている日付は<code>schema/</code>の下のフォルダである。</p>
+<h2 id="s6">確かめ直し方</h2>
+<p>使う側は、スキルを入れた後と、スキルを更新した後と、<code>musubi</code>の命令が在る時はエージェントが中身を読む前に確かめ直す。</p>
+<p><code>musubi check</code>は次の時に、fileと行を名指して拒む。</p>
+<ul><li><code>musubi.json</code>がJSONとして読めない、定義の知らない欄を持つ、知らない定義の版を名指す</li><li>版が<code>MAJOR.MINOR.PATCH</code>でない、範囲が3つの形のどれでもない</li><li>file、検査、例のpathがスキルのフォルダの外へ出るか、無いfileを名指す</li><li>検査がJSONの決まりのfileでない</li><li>使う側が、入っていないスキルか、そのスキルが出していない中身に従う</li><li>出す側の版が使う側の範囲の外に在る</li><li>指紋が合わない。最後に確かめた後に中身が変わったことを表す</li><li>例が出す側の検査の決まりに合わない</li><li>スキルどうしが輪になって従う (<code>alpha -&gt; beta -&gt; alpha</code>など)</li></ul>
+<p>輪にならない限り、どの深さの従い方も許す。指紋が合わない時、その中身はまだ受け入れていないので、<code>musubi check</code>はその出す側の検査を回さない。<code>musubi check --update</code>は変わった中身に検査を回し、全ての例が通った時だけ指紋を書き換える。1つでも落ちた時は、指紋を元のまま残す。<code>--update</code>を付けない<code>musubi check</code>はfileを書かない。</p>
+<div class="table"><table><thead><tr><th>終わり方</th><th>意味</th></tr></thead><tbody><tr><td><code>0</code></td><td>全ての宣言と例が通った。知らせを出すことがある</td></tr><tr><td><code>1</code></td><td>1つ以上の問題が在り、<code>&lt;file&gt;:&lt;行&gt;: &lt;文&gt;</code>の形で出した</td></tr><tr><td><code>2</code></td><td>命令の呼び方が違う</td></tr></tbody></table></div>
+<h2 id="s7">検査の決まり</h2>
+<p>検査のfileは、定義の版と決まりの一覧を持つJSONである。<code>musubi check</code>は決まりを読み、使う側が名指した例それぞれに回す。出す側のcodeは走らせない (判断の記録<a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0004-checks-are-json-rules.ja.md" rel="noopener">0004</a>)。</p>
+<pre data-lang="json"><code>{
+  &quot;musubi&quot;: &quot;2026-11-19&quot;,
+  &quot;rules&quot;: [
+    { &quot;kind&quot;: &quot;headings&quot;, &quot;headings&quot;: [&quot;## Purpose and scope&quot;, &quot;## Decisions&quot;, &quot;## Open decisions&quot;] },
+    { &quot;kind&quot;: &quot;forbid&quot;, &quot;text&quot;: [&quot;Fill in:&quot;] },
+    { &quot;kind&quot;: &quot;table-columns&quot;, &quot;heading&quot;: &quot;## Decisions&quot;, &quot;columns&quot;: [&quot;Option&quot;, &quot;Chosen&quot;, &quot;Why&quot;] }
+  ]
+}</code></pre>
+<div class="table"><table><thead><tr><th>種類</th><th>欄</th><th>例が通る時</th></tr></thead><tbody><tr><td><code>headings</code></td><td><code>headings</code> (見出しの行)</td><td>全ての見出しの行がこの順で在る。間にほかの見出しが在ってよい</td></tr><tr><td><code>forbid</code></td><td><code>text</code> (文の断片)</td><td>どの行もその文を含まない</td></tr><tr><td><code>table-columns</code></td><td><code>heading</code>、<code>columns</code></td><td>見出しの下の最初の表が全ての列を持つ。ほかの列が在ってよい</td></tr></tbody></table></div>
+<p>決まりは、囲んだcodeの区画の中の行を読み飛ばす。各決まりは求める物だけを探すので、使う側が足した節は通る。新しい種類の決まりは、新しい定義の版で足す。</p>
+<h2 id="s8">既にある仕組みとの関係</h2>
+<div class="table"><table><thead><tr><th>仕組み</th><th>やること</th><th>musubiとの関係</th></tr></thead><tbody><tr><td>スキルを入れる道具 (APM、npx skills、skillpmなど)</td><td>スキルとその依存を入れ、版を固定する</td><td>スキルの入手先はこの道具が持つ。<code>musubi.json</code>はスキルと中身と版だけを書くので、入手先は1か所に書く</td></tr><tr><td>Claude Codeのpluginの<code>dependencies</code></td><td>pluginが頼るpluginを入れる</td><td>入れる道具と同じ。この欄を持たないエージェントでは、使う側の本文の止まる1行に頼る</td></tr><tr><td>Agent Skills</td><td><code>SKILL.md</code>とスキルのフォルダを決める</td><td><code>SKILL.md</code>は変えず、<code>musubi.json</code>はフォルダの中の1つのfileに留まる。musubiは本物のスキルで動いた後に、Agent Skillsへ提案する</td></tr><tr><td>Agent Skillsの依存のfileとlockfileの提案</td><td>スキルが頼るスキルを宣言する</td><td>どのスキルを入れるかを書く。musubiは、そのスキルのどの中身にどの版で従うかを書き、確かめ直す</td></tr></tbody></table></div>
+<h2 id="s9">musubiの命令</h2>
+<p>命令はNode.js 22.18以降で動き、実行時の依存を持たない。</p>
+<div class="table"><table><thead><tr><th>命令</th><th>やること</th></tr></thead><tbody><tr><td><code>musubi check [&lt;フォルダ&gt;...] [--update]</code></td><td>フォルダの全ての<code>musubi.json</code>を、確かめ直し方の節のとおりに確かめる</td></tr><tr><td><code>musubi add &lt;スキル&gt;/&lt;中身&gt; [&lt;フォルダ&gt;...]</code></td><td>使う側のフォルダで回す。<code>musubi.json</code>に範囲<code>^&lt;今の版&gt;</code>と指紋を書き、既に在る欄を残し、<code>SKILL.md</code>に置く3行を出す</td></tr><tr><td><code>musubi graph [&lt;フォルダ&gt;...] [--out &lt;file&gt;]</code></td><td>スキルごとの箱と、従う中身への矢印を描いたHTMLを1枚書く</td></tr></tbody></table></div>
+</article>
+</div></div>
+</main>
+<footer class="footer"><div class="wrap">
+<a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MITライセンス</a>
+<div class="versions"><span>定義の版 2026-11-19</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.1.0</a></div>
+</div></footer>
+<script>
+document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
+document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){if(navigator.clipboard)navigator.clipboard.writeText(b.getAttribute("data-copy")).catch(function(){});b.classList.add("done");setTimeout(function(){b.classList.remove("done")},1200)})});
+</script>
+</body>
+</html>

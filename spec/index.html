@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The musubi definition | musubi</title>
+<meta name="description" content="musubi binds the content one agent skill provides to the skills that follow it, and checks them again when that content changes.">
+<link rel="canonical" href="https://musubi.cardene.dev/spec/">
+<link rel="alternate" hreflang="en" href="https://musubi.cardene.dev/spec/">
+<link rel="alternate" hreflang="ja" href="https://musubi.cardene.dev/ja/spec/">
+<link rel="alternate" hreflang="x-default" href="https://musubi.cardene.dev/spec/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="musubi">
+<meta property="og:title" content="The musubi definition | musubi">
+<meta property="og:description" content="musubi binds the content one agent skill provides to the skills that follow it, and checks them again when that content changes.">
+<meta property="og:url" content="https://musubi.cardene.dev/spec/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://musubi.cardene.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1a1d24">
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css">
+<script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("musubi-theme");if(m==="light"||m==="dark")document.documentElement.dataset.theme=m}catch(e){}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"The musubi definition","inLanguage":"en","url":"https://musubi.cardene.dev/spec/","version":"2026-11-19"}</script>
+</head>
+<body>
+<header class="header"><div class="wrap">
+<div class="left">
+<a class="brand" href="/"><svg class="logo" width="26" height="26" aria-hidden="true" viewBox="1 1 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="provider" d="M10.3 9.5C8.4 7.1 5.6 5.3 4 6.5C2.4 7.7 2.6 11.5 4.4 12.9C6.2 14.3 8.6 12.9 10.3 11.5M11 12.4C10.4 14.8 9.4 17 8 19.6"/><path class="follower" d="M13.7 9.5C15.6 7.1 18.4 5.3 20 6.5C21.6 7.7 21.4 11.5 19.6 12.9C17.8 14.3 15.4 12.9 13.7 11.5M13 12.4C13.6 14.8 14.6 17 16 19.6"/><path class="knot" d="M10.2 9.3a1.2 1.2 0 0 1 1.2-1.2h1.2a1.2 1.2 0 0 1 1.2 1.2v2.4a1.2 1.2 0 0 1-1.2 1.2h-1.2a1.2 1.2 0 0 1-1.2-1.2z"/></svg>musubi</a>
+<nav class="nav"><a href="/spec/" aria-current="page">Definition</a><a href="/skills/">Skills</a><a href="https://github.com/cardene777/musubi">GitHub</a></nav>
+</div>
+<div class="right">
+<div class="lang"><span aria-current="true">English</span><a data-lang-switch hreflang="ja" lang="ja" href="/ja/spec/">日本語</a></div>
+<button class="icon-button" type="button" data-theme-toggle aria-label="Switch between dark and light"><span class="when-dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><span class="when-light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span></button>
+</div>
+</div></header>
+<main>
+<div class="wrap"><div class="definition">
+<nav class="toc" aria-label="Contents"><strong>Contents</strong>
+<a href="#s1">Overview</a>
+<a href="#s2">Provider declaration</a>
+<a href="#s3">Consumer declaration</a>
+<a href="#s4">Discovery and loading</a>
+<a href="#s5">Versions and fingerprints</a>
+<a href="#s6">Re-checking</a>
+<a href="#s7">Check rules</a>
+<a href="#s8">Relation to existing systems</a>
+<a href="#s9">The musubi command</a>
+</nav>
+<article class="article">
+<div class="version"><span class="chip">Definition version 2026-11-19</span></div>
+<h1>The musubi definition</h1>
+<p>Definition version <code>2026-11-19</code>.</p>
+<p>musubi binds the content one agent skill provides, such as a document format or writing rules, to the skills that follow it. A skill declares that content under a name and a version, another skill declares that it follows it, agents load it the same way in every agent that reads <code>SKILL.md</code>, and the skills that follow it are checked again when it changes. This English text is the normative definition; <a href="/ja/spec/">musubi.ja.md</a> is its Japanese translation.</p>
+<h2 id="s1">Overview</h2>
+<p>A skill that takes part keeps its <code>SKILL.md</code> as Agent Skills defines it and adds one file, <code>musubi.json</code>, next to it.</p>
+<div class="table"><table><thead><tr><th>File</th><th>Written by</th><th>Holds</th></tr></thead><tbody><tr><td><code>SKILL.md</code></td><td>The skill's author</td><td>The Agent Skills frontmatter and body, unchanged. The body tells agents which content to read</td></tr><tr><td><code>musubi.json</code></td><td>The author, or <code>musubi add</code></td><td>The content the skill provides and the content it follows</td></tr><tr><td>A content file</td><td>The provider</td><td>A format, writing rules, or any other text that consumers follow</td></tr><tr><td>A check file</td><td>The provider</td><td>JSON rules that <code>musubi check</code> applies to the consumers' examples</td></tr></tbody></table></div>
+<pre data-lang="text"><code>skills/
+├── design-doc/              provider skill
+│   ├── SKILL.md             names the file of each content it provides
+│   ├── musubi.json          &quot;provides&quot;: design 1.0.0
+│   ├── formats/design.md    the content
+│   └── checks/design.json   the check rules
+└── api-design/              consumer skill
+    ├── SKILL.md             three lines that point at design-doc/design
+    ├── musubi.json          &quot;follows&quot;: design-doc/design ^1.0.0 and its fingerprint
+    └── examples/orders-api.md   an example the check is applied to</code></pre>
+<p><a href="https://github.com/cardene777/musubi/blob/HEAD/GLOSSARY.md" rel="noopener">GLOSSARY.md</a> defines the terms used here.</p>
+<h2 id="s2">Provider declaration</h2>
+<p>A provider skill lists its content under <code>provides</code> in <code>musubi.json</code>.</p>
+<pre data-lang="json"><code>{
+  &quot;$schema&quot;: &quot;../../../schema/2026-11-19/musubi.schema.json&quot;,
+  &quot;musubi&quot;: &quot;2026-11-19&quot;,
+  &quot;provides&quot;: {
+    &quot;design&quot;: { &quot;version&quot;: &quot;1.0.0&quot;, &quot;file&quot;: &quot;formats/design.md&quot;, &quot;check&quot;: &quot;checks/design.json&quot; }
+  }
+}</code></pre>
+<div class="table"><table><thead><tr><th>Field</th><th>Required</th><th>Meaning</th></tr></thead><tbody><tr><td><code>$schema</code></td><td>No</td><td>Where editors find the JSON Schema, <code>schema/&lt;date&gt;/musubi.schema.json</code></td></tr><tr><td><code>musubi</code></td><td>Yes</td><td>The definition version the file follows</td></tr><tr><td><code>provides.&lt;name&gt;</code></td><td>Yes, one per content</td><td>The content name: lowercase words joined by <code>-</code></td></tr><tr><td><code>provides.&lt;name&gt;.version</code></td><td>Yes</td><td>The content's version, <code>MAJOR.MINOR.PATCH</code></td></tr><tr><td><code>provides.&lt;name&gt;.file</code></td><td>Yes</td><td>The content file, relative to the skill folder</td></tr><tr><td><code>provides.&lt;name&gt;.check</code></td><td>No</td><td>A JSON rules file, relative to the skill folder, described in Check rules</td></tr></tbody></table></div>
+<p>Each content is one file with at most one check, and it is named <code>&lt;skill&gt;/&lt;name&gt;</code>, such as <code>design-doc/design</code>. Each content has its own version, so changing one does not change the version of the others. Paths stay inside the skill folder; <code>musubi check</code> refuses absolute paths and paths that leave it. The provider's <code>SKILL.md</code> body names the file of each content, because agents find the file by reading that body (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0002-agents-open-the-provider-by-name.md" rel="noopener">0002</a>). <code>musubi.json</code> is a separate file, not a frontmatter field, so that <code>SKILL.md</code> keeps passing the Agent Skills checks (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0001-declarations-in-musubi-json.md" rel="noopener">0001</a>).</p>
+<h2 id="s3">Consumer declaration</h2>
+<p>A consumer skill lists the content it follows under <code>follows</code> in <code>musubi.json</code>.</p>
+<pre data-lang="json"><code>{
+  &quot;musubi&quot;: &quot;2026-11-19&quot;,
+  &quot;follows&quot;: {
+    &quot;design-doc/design&quot;: {
+      &quot;version&quot;: &quot;^1.0.0&quot;,
+      &quot;integrity&quot;: &quot;sha256-yNSwpBT+xXEV5bGBqedpHmjWIHVi+JaAnRATAJ0s7wM=&quot;,
+      &quot;examples&quot;: [&quot;examples/orders-api.md&quot;]
+    }
+  }
+}</code></pre>
+<div class="table"><table><thead><tr><th>Field</th><th>Required</th><th>Meaning</th></tr></thead><tbody><tr><td><code>follows.&lt;skill&gt;/&lt;content&gt;</code></td><td>Yes, one per content</td><td>The content followed</td></tr><tr><td><code>follows.&lt;ref&gt;.version</code></td><td>Yes</td><td>The versions the consumer accepts, described in Versions and fingerprints</td></tr><tr><td><code>follows.&lt;ref&gt;.integrity</code></td><td>Yes</td><td>The fingerprint of the content at the last check</td></tr><tr><td><code>follows.&lt;ref&gt;.examples</code></td><td>No</td><td>Files of the consumer that the provider's check is applied to</td></tr></tbody></table></div>
+<p>The consumer's <code>SKILL.md</code> body carries three lines for each content it follows, which <code>musubi add</code> prints.</p>
+<pre data-lang="text"><code>Write in the `design` format of the `design-doc` skill: open the `design-doc` skill by name and read the file it names for `design`.
+If the `musubi` command is available, run `musubi check` before reading, and stop if it fails.
+If the `design-doc` skill is not installed, do not start: tell the user that `design-doc` is missing and how to install it, then stop.</code></pre>
+<p>When the content's file is a script, told apart by the extensions <code>.py</code>, <code>.sh</code>, <code>.bash</code>, <code>.js</code>, <code>.mjs</code>, <code>.cjs</code>, and <code>.ts</code> in any case, the first line tells the agent to run it instead of reading it as a format.</p>
+<pre data-lang="text"><code>Run the `verify` of the `design-doc` skill: open the `design-doc` skill by name and run the file it names for `verify`.</code></pre>
+<p>A consumer may add its own sections to the content it follows. It may not remove or rename what the provider's check requires. A skill may both provide content and follow content; a provider's format may follow shared writing rules, for example.</p>
+<h2 id="s4">Discovery and loading</h2>
+<p>Agents load content by reading <code>SKILL.md</code> bodies, and never read <code>musubi.json</code> while they use a skill. An agent that knows nothing of musubi therefore loads content the same way as one that has the command.</p>
+<ol><li>The agent reads the consumer's <code>SKILL.md</code>, as it does for any skill.</li><li>The body names the provider skill and the content. The agent opens the provider skill by name from the skills it has installed and reads the file that the provider's body names for that content.</li><li>The agent reads only that file, whole. It does not read the provider's other content.</li><li>When the provider skill is not installed, the agent does not start; it tells the user which skill is missing and how to install it, and stops.</li></ol>
+<p>Claude Code, Codex, GitHub Copilot CLI, and Gemini CLI each list installed skills by name, so opening a skill by name works wherever the skill is installed. Relative paths between skill folders are not used, because two skills from different plugins are not installed side by side.</p>
+<p><code>musubi check</code> and <code>musubi graph</code> read skills from the folders named on the command line. Without folders they read <code>.claude/skills</code>, <code>.agents/skills</code>, <code>.github/skills</code>, and <code>.gemini/skills</code> in the current folder and in the home folder. A skill is a folder directly inside one of them that holds <code>SKILL.md</code>, and its name is the folder name. When two folders hold a skill of the same name, the first folder in that order wins and <code>musubi check</code> warns about the other.</p>
+<p>Agents read a content file whole, so <code>musubi check</code> warns when one is over 500 lines, the length Agent Skills suggests for <code>SKILL.md</code>. It does not refuse such content; a provider splits a long content into several.</p>
+<h2 id="s5">Versions and fingerprints</h2>
+<p>A content version is <code>MAJOR.MINOR.PATCH</code>.</p>
+<div class="table"><table><thead><tr><th>Change to the content or its check</th><th>Raise</th></tr></thead><tbody><tr><td>A consumer can break: a required section or column is removed or renamed, or the check becomes stricter</td><td><code>MAJOR</code></td></tr><tr><td>Something is added that consumers may use, such as an optional section</td><td><code>MINOR</code></td></tr><tr><td>Wording changes that keep every consumer valid</td><td><code>PATCH</code></td></tr></tbody></table></div>
+<p>A consumer writes the versions it accepts in one of three forms, read the way npm reads them.</p>
+<div class="table"><table><thead><tr><th>Form</th><th>Accepts</th><th>Example</th></tr></thead><tbody><tr><td><code>^X.Y.Z</code></td><td>From <code>X.Y.Z</code> up to the next <code>MAJOR</code>; for <code>0.Y.Z</code>, up to the next <code>MINOR</code></td><td><code>^1.2.0</code> accepts <code>1.9.4</code>, not <code>2.0.0</code></td></tr><tr><td><code>~X.Y.Z</code></td><td>From <code>X.Y.Z</code> up to the next <code>MINOR</code></td><td><code>~1.2.0</code> accepts <code>1.2.7</code>, not <code>1.3.0</code></td></tr><tr><td><code>X.Y.Z</code></td><td>Only <code>X.Y.Z</code></td><td><code>1.2.0</code></td></tr></tbody></table></div>
+<p>The fingerprint records exactly what the consumer was last checked against. It covers the provider's <code>SKILL.md</code>, the content file, and the check file, because an agent reads the first two and the check decides whether the consumer passes.</p>
+<pre data-lang="text"><code>for each path in [SKILL.md, &lt;file&gt;, &lt;check, when present&gt;]:
+    hash.update(path + &quot;\n&quot; + byte length in decimal + &quot;\n&quot;)
+    hash.update(the file's bytes)
+    hash.update(&quot;\n&quot;)
+integrity = &quot;sha256-&quot; + base64(sha256 digest)</code></pre>
+<p>Paths are relative to the provider's skill folder and use <code>/</code>. The range and the fingerprint sit together in <code>musubi.json</code>; there is no lockfile (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0003-range-and-fingerprint-without-a-lockfile.md" rel="noopener">0003</a>).</p>
+<p>The definition itself is versioned by date. Each <code>musubi.json</code> and each check file names the date it follows in <code>musubi</code>, and <code>musubi check</code> reads every date it knows and refuses the others. The dates it knows are the folders under <code>schema/</code>.</p>
+<h2 id="s6">Re-checking</h2>
+<p>A consumer is checked again after a skill is installed, after a skill is updated, and, when the <code>musubi</code> command is available, before an agent reads the content.</p>
+<p><code>musubi check</code> refuses, naming the file and the line, when:</p>
+<ul><li><code>musubi.json</code> is not valid JSON, has a field the definition does not know, or names a definition version it does not know</li><li>a version is not <code>MAJOR.MINOR.PATCH</code>, or a range is not one of the three forms</li><li>a file, check, or example path leaves the skill folder or names a missing file</li><li>a check is not a JSON rules file</li><li>a consumer follows a skill that is not installed, or a content that skill does not provide</li><li>the provider's version is outside the consumer's range</li><li>the fingerprint does not match, which means the content changed after the last check</li><li>an example breaks a rule of the provider's check</li><li>skills follow each other in a cycle, such as <code>alpha -&gt; beta -&gt; alpha</code></li></ul>
+<p>Chains of any depth are allowed as long as they do not form a cycle. When a fingerprint does not match, <code>musubi check</code> does not apply that provider's check, because its content has not been accepted. <code>musubi check --update</code> applies the check to the changed content and rewrites the fingerprint only when every example passes; when one fails, the fingerprint stays as it was. <code>musubi check</code> without <code>--update</code> never writes a file.</p>
+<div class="table"><table><thead><tr><th>Exit status</th><th>Meaning</th></tr></thead><tbody><tr><td><code>0</code></td><td>Every declaration and example passed; warnings may be printed</td></tr><tr><td><code>1</code></td><td>At least one problem, printed as <code>&lt;file&gt;:&lt;line&gt;: &lt;message&gt;</code></td></tr><tr><td><code>2</code></td><td>The command was called the wrong way</td></tr></tbody></table></div>
+<h2 id="s7">Check rules</h2>
+<p>A check file is JSON with the definition version and a list of rules. <code>musubi check</code> reads the rules and applies them to each example the consumer names; it never runs provider code (decision record <a href="https://github.com/cardene777/musubi/blob/HEAD/docs/adr/0004-checks-are-json-rules.md" rel="noopener">0004</a>).</p>
+<pre data-lang="json"><code>{
+  &quot;musubi&quot;: &quot;2026-11-19&quot;,
+  &quot;rules&quot;: [
+    { &quot;kind&quot;: &quot;headings&quot;, &quot;headings&quot;: [&quot;## Purpose and scope&quot;, &quot;## Decisions&quot;, &quot;## Open decisions&quot;] },
+    { &quot;kind&quot;: &quot;forbid&quot;, &quot;text&quot;: [&quot;Fill in:&quot;] },
+    { &quot;kind&quot;: &quot;table-columns&quot;, &quot;heading&quot;: &quot;## Decisions&quot;, &quot;columns&quot;: [&quot;Option&quot;, &quot;Chosen&quot;, &quot;Why&quot;] }
+  ]
+}</code></pre>
+<div class="table"><table><thead><tr><th>Kind</th><th>Fields</th><th>An example passes when</th></tr></thead><tbody><tr><td><code>headings</code></td><td><code>headings</code>: heading lines</td><td>Every heading line appears, in this order. Other headings may come between them</td></tr><tr><td><code>forbid</code></td><td><code>text</code>: pieces of text</td><td>No line contains any of the text</td></tr><tr><td><code>table-columns</code></td><td><code>heading</code>, <code>columns</code></td><td>The first table under the heading has every column. It may have more</td></tr></tbody></table></div>
+<p>Rules skip lines inside fenced code blocks. A consumer's added sections pass, because each rule looks only for what it requires. A new kind of rule is added by a new definition version.</p>
+<h2 id="s8">Relation to existing systems</h2>
+<div class="table"><table><thead><tr><th>System</th><th>What it does</th><th>How musubi relates</th></tr></thead><tbody><tr><td>Skill installers (APM, npx skills, skillpm, and others)</td><td>Install skills and their dependencies, and lock versions</td><td>They own where a skill comes from. <code>musubi.json</code> names only the skill, the content, and the version, so the source is written once</td></tr><tr><td>Claude Code plugin <code>dependencies</code></td><td>Install the plugins a plugin depends on</td><td>Same as installers. Agents without such a field rely on the stop line in the consumer's body</td></tr><tr><td>Agent Skills</td><td>Defines <code>SKILL.md</code> and the skill folder</td><td><code>SKILL.md</code> is unchanged and <code>musubi.json</code> is one more file in the folder. musubi is to be proposed to Agent Skills once it runs on real skills</td></tr><tr><td>Agent Skills proposals for dependency files and lockfiles</td><td>Declare which skills a skill needs</td><td>They say which skill to install. musubi says which content of it a skill follows, at which version, and checks it again</td></tr></tbody></table></div>
+<h2 id="s9">The musubi command</h2>
+<p>The command needs Node.js 22.18 or later and has no runtime dependencies.</p>
+<div class="table"><table><thead><tr><th>Command</th><th>Does</th></tr></thead><tbody><tr><td><code>musubi check [&lt;folder&gt;...] [--update]</code></td><td>Checks every <code>musubi.json</code> in the folders, as described in Re-checking</td></tr><tr><td><code>musubi add &lt;skill&gt;/&lt;content&gt; [&lt;folder&gt;...]</code></td><td>Run in a consumer's folder: writes the range <code>^&lt;current version&gt;</code> and the fingerprint into its <code>musubi.json</code>, keeps the fields already there, and prints the three lines for its <code>SKILL.md</code></td></tr><tr><td><code>musubi graph [&lt;folder&gt;...] [--out &lt;file&gt;]</code></td><td>Writes one HTML page that draws each skill and an arrow to each content it follows</td></tr></tbody></table></div>
+</article>
+</div></div>
+</main>
+<footer class="footer"><div class="wrap">
+<a class="muted" href="https://github.com/cardene777/musubi/blob/HEAD/LICENSE">MIT License</a>
+<div class="versions"><span>Definition 2026-11-19</span><a class="muted" href="https://www.npmjs.com/package/musubi-cli">musubi-cli 0.1.0</a></div>
+</div></footer>
+<script>
+document.querySelector("[data-theme-toggle]").addEventListener("click",function(){var r=document.documentElement,m=r.dataset.theme==="light"?"dark":"light";r.dataset.theme=m;try{localStorage.setItem("musubi-theme",m)}catch(e){}});
+document.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){if(navigator.clipboard)navigator.clipboard.writeText(b.getAttribute("data-copy")).catch(function(){});b.classList.add("done");setTimeout(function(){b.classList.remove("done")},1200)})});
+</script>
+</body>
+</html>
