@@ -1,4 +1,24 @@
-# musubi
+<p align="center">
+  <img src="site/assets/icon.svg" width="88" height="88" alt="">
+</p>
+
+<h1 align="center">musubi</h1>
+
+<p align="center">Bind what one skill provides to the skills that follow it</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/musubi-cli"><img src="https://img.shields.io/npm/v/musubi-cli" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
+  <a href="https://www.npmjs.com/package/musubi-cli"><img src="https://img.shields.io/node/v/musubi-cli" alt="Node.js version"></a>
+</p>
+
+<p align="center">
+  <a href="https://musubi.cardene.dev/">Website</a> · <a href="spec/musubi.md">Definition</a> · <a href="README.ja.md">日本語</a>
+</p>
+
+<p align="center">
+  <img src="docs/assets/binding.svg" width="720" alt="design-doc provides design 1.0.0, and contract-design, dapp-architecture, and wallet-design follow it at ^1.0.0">
+</p>
 
 musubi is a proposal for binding the content of one agent skill to another.
 
@@ -103,4 +123,6 @@ The public site is at <https://musubi.cardene.dev/>, and [docs/publishing.md](do
 | [docs/publishing.md](docs/publishing.md) | How the site is published to GitHub Pages |
 | [docs/adr](docs/adr) | Decisions that are costly to reverse, with the options not taken |
 
-Japanese: [README.ja.md](README.ja.md)
+## License
+
+musubi is released under the MIT License. The full text is in [LICENSE](LICENSE).

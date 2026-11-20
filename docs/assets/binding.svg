@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 260" width="720" height="260" role="img" aria-label="design-doc provides design 1.0.0, and contract-design, dapp-architecture, and wallet-design follow it at ^1.0.0">
+  <style>
+    .t { font-family: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .m { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .base { fill: none; stroke: #22D3EE; stroke-opacity: .28; stroke-width: 2; }
+    .flow { fill: none; stroke: #22D3EE; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 2 14; animation: flow 1.1s linear infinite; }
+    @keyframes flow { to { stroke-dashoffset: -32; } }
+    @media (prefers-reduced-motion: reduce) { .flow { animation: none; } .dot { display: none; } }
+  </style>
+  <rect width="720" height="260" rx="16" fill="#0F1419"/>
+  <path id="p1" class="base" d="M284 130 C 360 130, 360 60, 436 60"/>
+  <path id="p2" class="base" d="M284 130 H 436"/>
+  <path id="p3" class="base" d="M284 130 C 360 130, 360 200, 436 200"/>
+  <path class="flow" d="M284 130 C 360 130, 360 60, 436 60"/>
+  <path class="flow" d="M284 130 H 436"/>
+  <path class="flow" d="M284 130 C 360 130, 360 200, 436 200"/>
+  <circle class="dot" r="3.5" fill="#E6FBFF"><animateMotion dur="2.4s" repeatCount="indefinite" begin="0s"><mpath href="#p1"/></animateMotion></circle>
+  <circle class="dot" r="3.5" fill="#E6FBFF"><animateMotion dur="2.4s" repeatCount="indefinite" begin="-1.6s"><mpath href="#p2"/></animateMotion></circle>
+  <circle class="dot" r="3.5" fill="#E6FBFF"><animateMotion dur="2.4s" repeatCount="indefinite" begin="-0.8s"><mpath href="#p3"/></animateMotion></circle>
+
+  <rect x="24" y="50" width="260" height="160" rx="14" fill="#161B22" stroke="#22D3EE" stroke-width="1.5"/>
+  <text class="t" x="44" y="87" font-size="18" font-weight="700" fill="#E6EDF3">design-doc</text>
+  <rect x="190" y="69" width="76" height="24" rx="6" fill="#22D3EE" fill-opacity=".15"/>
+  <text class="t" x="228" y="85.5" font-size="12" font-weight="600" fill="#22D3EE" text-anchor="middle">provides</text>
+  <path d="M25 106 H 283" stroke="#30363D"/>
+  <text class="m" x="44" y="143" font-size="15" fill="#22D3EE">design</text>
+  <text class="m" x="124" y="143" font-size="15" fill="#8B949E">1.0.0</text>
+  <text class="m" x="44" y="184" font-size="15" fill="#22D3EE">verify</text>
+  <text class="m" x="124" y="184" font-size="15" fill="#8B949E">1.0.0</text>
+
+  <rect x="318" y="118" width="84" height="24" rx="12" fill="#0F1419" stroke="#22D3EE" stroke-width="1.2"/>
+  <text class="m" x="360" y="134.5" font-size="12" fill="#22D3EE" text-anchor="middle">follows</text>
+
+  <g>
+    <rect x="436" y="34" width="260" height="52" rx="12" fill="#161B22" stroke="#30363D"/>
+    <circle cx="461" cy="60" r="8" fill="none" stroke="#A78BFA" stroke-width="1.6"/>
+    <path d="M457.5 60.2l2.4 2.4 4.6-4.8" fill="none" stroke="#A78BFA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="t" x="478" y="65" font-size="15" font-weight="600" fill="#E6EDF3">contract-design</text>
+    <text class="m" x="680" y="65" font-size="12" fill="#A78BFA" text-anchor="end">^1.0.0</text>
+  </g>
+  <g>
+    <rect x="436" y="104" width="260" height="52" rx="12" fill="#161B22" stroke="#30363D"/>
+    <circle cx="461" cy="130" r="8" fill="none" stroke="#A78BFA" stroke-width="1.6"/>
+    <path d="M457.5 130.2l2.4 2.4 4.6-4.8" fill="none" stroke="#A78BFA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="t" x="478" y="135" font-size="15" font-weight="600" fill="#E6EDF3">dapp-architecture</text>
+    <text class="m" x="680" y="135" font-size="12" fill="#A78BFA" text-anchor="end">^1.0.0</text>
+  </g>
+  <g>
+    <rect x="436" y="174" width="260" height="52" rx="12" fill="#161B22" stroke="#30363D"/>
+    <circle cx="461" cy="200" r="8" fill="none" stroke="#A78BFA" stroke-width="1.6"/>
+    <path d="M457.5 200.2l2.4 2.4 4.6-4.8" fill="none" stroke="#A78BFA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="t" x="478" y="205" font-size="15" font-weight="600" fill="#E6EDF3">wallet-design</text>
+    <text class="m" x="680" y="205" font-size="12" fill="#A78BFA" text-anchor="end">^1.0.0</text>
+  </g>
+</svg>

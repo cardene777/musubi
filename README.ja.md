@@ -1,4 +1,24 @@
-# musubi
+<p align="center">
+  <img src="site/assets/icon.svg" width="88" height="88" alt="">
+</p>
+
+<h1 align="center">musubi</h1>
+
+<p align="center">スキルが提供するコンテンツとそれに準拠するスキルを結ぶ</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/musubi-cli"><img src="https://img.shields.io/npm/v/musubi-cli" alt="npmのバージョン"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MITライセンス"></a>
+  <a href="https://www.npmjs.com/package/musubi-cli"><img src="https://img.shields.io/node/v/musubi-cli" alt="Node.jsのバージョン"></a>
+</p>
+
+<p align="center">
+  <a href="https://musubi.cardene.dev/ja/">サイト</a> · <a href="spec/musubi.ja.md">定義</a> · <a href="README.md">English</a>
+</p>
+
+<p align="center">
+  <img src="docs/assets/binding.svg" width="720" alt="design-docがdesign 1.0.0を提供し、contract-designとdapp-architectureとwallet-designが^1.0.0で準拠する">
+</p>
 
 musubiは、あるエージェントのスキルのコンテンツを、別のスキルと結び付けるための提案です。
 
@@ -111,4 +131,7 @@ PRは要りません。
 | [docs/publishing.ja.md](docs/publishing.ja.md) | サイトをGitHub Pagesへ公開する手順 |
 | [docs/adr](docs/adr) | 元に戻すのが高くつく判断と、採らなかった案 |
 
-English: [README.md](README.md)
+## ライセンス
+
+musubiはMITライセンスで公開しています。
+全文は[LICENSE](LICENSE)にあります。
