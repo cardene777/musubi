@@ -2,7 +2,7 @@
 
 | 条件 | 確かめ方 | 出元 |
 |---|---|---|
-| `package.json`の名前は`musubi-cli`、バージョンは`0.2.0`で、`repository`のURLは`github.com/<持ち主>/musubi`を指す | `pnpm test`の検査`package-is-musubi-cli`が通る | #8、#33 |
+| `package.json`の名前は`musubi-cli`、バージョンは`0.3.0`で、`repository`のURLは`github.com/<持ち主>/musubi`を指す | `pnpm test`の検査`package-is-musubi-cli`が通る | #8、#33、#42 |
 | `package.json`は`private`を持たず、`npm publish`に断られない | `pnpm test`の検査`package-is-musubi-cli`が通る | #8 |
 | 追跡するfileだけを写した`dist/`の無いフォルダで`npm pack`が作ったfileを入れると、`musubi`の命令が`check examples/skills`を通す | `pnpm test`の検査`packed-command-checks-the-examples`が通る | #8 |
 | `npm pack`が作ったfileは`src/`、`tests/`、`examples/`、`.ikkan/`、`node_modules/`の下のfileを含まない | `pnpm test`の検査`packed-files-leave-out-the-sources`が通る | #8 |
