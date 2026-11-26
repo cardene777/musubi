@@ -130,6 +130,18 @@ test("account-name-only-in-license-and-package", () => {
   assert.deepEqual(found, [], "files other than LICENSE, package.json, registry/, and design/ name the account");
 });
 
+test("ikkan-gates-run-the-tests-as-reached-checks", () => {
+  // The ikkan gates run the command of the reached checks field after each issue's tests. Without
+  // the row, the test step's gate refuses every issue of the personal route.
+  const file = join(root, ".ikkan", "checks.md");
+  assert.ok(existsSync(file), ".ikkan/checks.md is missing");
+  const rows = readFileSync(file, "utf8").split("\n");
+  assert.ok(
+    rows.some((row) => /^\| *(届く検査|Reached checks) *\| *`pnpm test` *\|$/.test(row)),
+    ".ikkan/checks.md has no reached checks row naming pnpm test",
+  );
+});
+
 test("packed-files-leave-out-the-site", () => {
   const { files } = pack();
   const leaked = files.filter((path) => /^(site|registry|design)\//.test(path));
